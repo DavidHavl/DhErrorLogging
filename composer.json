@@ -14,7 +14,7 @@
     ],
     "homepage" : "https://github.com/DavidHavl/ErrorLogging",
     "require" : {
-        "zendframework/zendframework" : ">2.3.*",
+        "zendframework/zendframework" : ">2.3.0",
         "ccampbell/chromephp": "4.1.0"
     },
     "license" : "MIT",
