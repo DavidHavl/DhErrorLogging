@@ -10,7 +10,7 @@ The module also adds several useful info to the final log such as IP, url called
 
 ## Installation
 
-- Add ```"davidhavl/dh-errorlogging": "dev-master"``` to the require section of your composer.json
+- Add ```"davidhavl/dherrorlogging": "dev-master"``` to the require section of your composer.json
 - Add ```'DhErrorLogging'``` to the modules array in your application.config.php before any other module (or as close to the top as possible).
 
 ## Notes
