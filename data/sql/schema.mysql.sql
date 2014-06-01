@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS `error_log` (
   `log_id` int(11) NOT NULL AUTO_INCREMENT,
-  `creation_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `creation_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `reference` varchar(6) DEFAULT '',
   `priority` varchar(12) DEFAULT 'DEBUG',
   `message` text,
   `file` text,

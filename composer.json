@@ -1,5 +1,5 @@
 {
-    "name" : "davidhavl/error-logging",
+    "name" : "davidhavl/dherrorlogging",
     "description" : "Error Logging module for Zend Framework 2",
     "type" : "library",
     "keywords": [
@@ -12,7 +12,7 @@
         "error log",
         "logger"
     ],
-    "homepage" : "https://github.com/DavidHavl/ErrorLogging",
+    "homepage" : "https://github.com/DavidHavl/DhErrorLogging",
     "require" : {
         "zendframework/zendframework" : ">2.3.0",
         "ccampbell/chromephp": "4.1.0"
@@ -28,7 +28,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "ErrorLogging\\": "src/"
+            "DhErrorLogging\\": "src/"
         },
         "classmap" : [
             "./Module.php"

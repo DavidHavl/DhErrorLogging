@@ -1,31 +1,14 @@
 <?php
 
-namespace ErrorLogging;
+namespace DhErrorLogging;
 
 use Zend\Mvc\ModuleRouteListener;
 use Zend\Mvc\MvcEvent;
 use Zend\Log\Logger;
-use Zend\Log\Processor;
-use Zend\Log\Writer;
-use Zend\Log\Formatter;
-use Zend\Log\Filter;
 use Zend\Db\Adapter;
 
 class Module
 {
-
-    public function onBootstrap(MvcEvent $e)
-    {
-        $eventManager        = $e->getApplication()->getEventManager();
-        $moduleRouteListener = new ModuleRouteListener();
-        $moduleRouteListener->attach($eventManager);
-
-
-        // set logging of errors
-        $this->initErrorLogger($e);
-    }
-
-
     public function getConfig()
     {
         return include __DIR__ . '/config/module.config.php';
@@ -43,107 +26,50 @@ class Module
     }
 
 
-
-    public function getLogProcessorConfig()
+    public function onBootstrap(MvcEvent $e)
     {
-        return array(
-            'factories' => array(
-                'Errorlogging\Processor\LogExtras' => function($sm) {
-                        $request = $sm->getServiceLocator()->get('application')->getRequest();
-                        $processor = new \ErrorLogging\Processor\LogExtras($request);
-                        return $processor;
-                    }
-            )
-        );
+        $eventManager        = $e->getApplication()->getEventManager();
+        $moduleRouteListener = new ModuleRouteListener();
+        $moduleRouteListener->attach($eventManager);
+
+
+        // set logging of errors
+        $this->initErrorLogger($e);
     }
 
     public function initErrorLogger($e)
     {
+
         $app = $e->getApplication();
-        $eventManager = $app->getEventManager();
         $serviceManager = $app->getServiceManager();
+        $config = $serviceManager->get('config');
 
-        // create new logger
-        $logger = new Logger();
-        // create priority filter to log only certain error types (warnings or more serious error types).
-        $filter = new Filter\Priority(Logger::WARN);
-
-
-        //// add processors which will add some extra helpful info to the final log. ////
-
-        // add backtrace to final log
-        $logger->addProcessor(new Processor\Backtrace());
-        // add extra info (IP, URI, trace) to the final log.
-        $logger->addProcessor($serviceManager->get('LogProcessorManager')->get('Errorlogging\Processor\LogExtras'));
-
-
-
-
-        //// logging into file ////
-
-        // set path of a file where logs will be written to
-        $filePath = APPLICATION_PATH . '/data/log/error.log';
-        // create new log writer - stream - to log errors to file.
-        $streamWriter = new Writer\Stream($filePath, null, "\n");
-        // add filter to log only warnings or more serious errors
-        $streamWriter->addFilter($filter);
-        // add the new writer to logger
-        $logger->addWriter($streamWriter);
-
-
-        //// logging into db as well (delete this section if logging in to file is good enough)  ////
-
-        // get db adapter from service manager
-        $dbAdapter = $serviceManager->get('Zend\Db\Adapter\Adapter');
-        // set db table name where logs will be recorded to
-        $dbTableName = 'error_log';
-
-        // create a map between errors and your db table columns
-        $map = array(
-            'timestamp' => 'creation_date',
-            'priorityName' => 'priority',
-            'message' => 'message',
-            'extra' =>  array(
-                'file'  => 'file',
-                'line'  => 'line',
-                'trace' => 'trace',
-                'xdebug' => 'xdebug',
-                'uri' => 'uri',
-                'ip' => 'ip',
-                'session_id' => 'session_id'
-            )
-        );
-
-        // create new database writer
-        $dbWriter = new Writer\Db($dbAdapter, $dbTableName, $map);
-        // add filter to log only wanted error types
-        $dbWriter->addFilter($filter);
-        // add db writer to logger
-        $logger->addWriter($dbWriter);
-
-
-
-        //// logging into chromePhp ////
-
-        // check if we are in development mode (make sure APPLICATION_ENV is defined)
-        if (APPLICATION_ENV == 'development') {
-            // create chromephp writer
-            $chromeWriter = new Writer\ChromePhp();
-            // add bit more info about the error to the chrome console, not just message
-            $chromeWriter->setFormatter(new Formatter\ErrorHandler());
-            // add it to logger
-            $logger->addWriter($chromeWriter);
+        // return if there is no config
+        if (empty($config['dherrorlogging']['enabled'])) {
+            return;
         }
 
+        // get logger
+        $logger = $serviceManager->get('DhErrorLogging\Logger');
+        $generator = $serviceManager->get('DhErrorLogging\ErrorReferenceGenerator');
 
         // Handle native PHP errors
-        Logger::registerErrorHandler($logger, true);
-        Logger::registerExceptionHandler($logger);
-        Logger::registerFatalErrorShutdownFunction($logger);
 
+        // convert php errors into exceptions so that it is caught by same process as exceptions.
+        set_error_handler(function ($level, $message, $file, $line) use ($logger) {
+            $minErrorLevel = error_reporting();
+            if ($minErrorLevel & $level) {
+                throw new \ErrorException($message, $code = 0, $level, $file, $line);
+            }
+            // return false to not continue native handler
+            return false;
+        });
 
+        // Get shared event manager
+        $sharedEventManager  = $app->getEventManager()->getSharedManager();
         // Handle framework specific errors
-        $eventManager->attach(array(MvcEvent::EVENT_DISPATCH_ERROR, MvcEvent::EVENT_RENDER_ERROR), function($event) use ($logger) {
+        $sharedEventManager->attach('Zend\Mvc\Application', array(MvcEvent::EVENT_DISPATCH_ERROR, MvcEvent::EVENT_RENDER_ERROR), function($event) use ($logger, $generator) {
+
             // check if event is error
             if (!$event->isError()) {
                 return;
@@ -151,21 +77,74 @@ class Module
             // get message and exception (if present)
             $message = $event->getError();
             $exception = $event->getParam('exception');
-
-            $extras = array();
+            // generate unique reference for this error
+            $errorReference = $generator->generate();
+            $extras = array(
+                'reference' => $errorReference
+            );
             // check if event has exception and populate extras array.
             if (!empty($exception)) {
                 $message =        $exception->getMessage();
                 $extras['file'] =  $exception->getFile();
                 $extras['line']  = $exception->getLine();
                 $extras['trace'] = $exception->getTraceAsString();
+
+                // check if xdebug is enabled and message present in which case add it to the extras
+                if (isset($exception->xdebug_message)) {
+                    $extra['xdebug'] = $exception->xdebug_message;
+                }
             }
-            // log the error
-            $logger->log(Logger::ERR, $message, $extras);
+
+            // log it
+            $priority = Logger::ERR;
+            $logger->log($priority, $message, $extras);
+
+            // hijack error view and add error reference to the message
+            $originalMessage = $event->getResult()->getVariable('message');
+            $event->getResult()->setVariable('message', $originalMessage . '<br /> Error Reference: ' .  $errorReference);
+
         });
+
+        // catch also fatal errors which woud not show the error template.
+        register_shutdown_function(function () use ($logger, $generator, $config) {
+
+            $error = error_get_last();
+            // log only errors
+            if (null === $error || $error['type'] !== E_ERROR) {
+                return;
+            }
+
+            // clean any previous output from buffer
+            while( ob_get_level() > 0 ) {
+                ob_end_clean();
+            }
+
+            $errorReference = $generator->generate();
+
+            $extras = array(
+                'reference' => $errorReference,
+                'file' => $error['file'],
+                'line' => $error['line']
+            );
+
+            // log error using logger
+            $logger->log(Logger::$errorPriorityMap[$error['type']], $error['message'], $extras);
+
+            // get absolute path of the template to render (the shutdown method sometimes changes relative path).
+            $fatalTemplatePath = dirname(__FILE__) . '/view/error/fatal.html';
+            if (!empty($config['dherrorlogging']['templates']['fatal'])
+                && file_exists($config['dherrorlogging']['templates']['fatal'])) {
+
+                $fatalTemplatePath = $config['dherrorlogging']['templates']['fatal'];
+            }
+            // read content of file
+            $body = file_get_contents($fatalTemplatePath);
+            // inject error reference
+            $body = str_replace('%__ERROR_REFERENCE__%', 'Error Reference: ' .  $errorReference, $body);
+            echo $body;
+            die(1);
+        });
+
     }
-
-
-
 
 }
