@@ -19,6 +19,7 @@ You can enable/disable the logging, you can configure several things such as tem
 You can also overwrite the logger, processor or reference generator if you wish (and know what you are doing).
 
 When adding db log writer you can use sql  schema from /data directory and the column map to set in the writer is following:
+<pre>
 array(
     'timestamp' => 'creation_time',
     'priorityName' => 'priority',
@@ -33,3 +34,4 @@ array(
         'session_id' => 'session_id'
     )
 )
+</pre>
