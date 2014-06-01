@@ -1,6 +1,6 @@
 {
     "name" : "davidhavl/dherrorlogging",
-    "description" : "Error Logging module for Zend Framework 2",
+    "description" : "Full featured error logging module for ZF2 application",
     "type" : "library",
     "keywords": [
         "zend framework",
