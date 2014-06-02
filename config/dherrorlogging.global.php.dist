@@ -37,7 +37,7 @@ return array(
                 // template for fatal errors
                 'fatal' => __DIR__ . '/../view/error/fatal.html',
             )
-        )*/
+        ),*/
 
         'log_writers' => array(
             'factories' => array(
