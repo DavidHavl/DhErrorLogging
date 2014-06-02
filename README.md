@@ -3,35 +3,37 @@ ZF2 application error logging
 
 Full featured Error logging module for ZF2 application
 
-Takes care of framework specific exceptions, uncaught exceptions, php errors and even fatal errors.
-Each log also has error reference saved with the log and users can see this reference when fatal error happens to help identify the problem when reporting it back to you.
-There are several easily configurable loggers (file, db, chromephp).
+Takes care of framework specific exceptions, php errors and even fatal errors.
+Each log record has also an error reference number that users see on error page (error or fatal) which helps to identify the problem when reporting it back to you.
 The module also adds several useful info to the final log such as IP, url called, session id, backtrace,...
 
 ## Installation
 
 - Add ```"davidhavl/dherrorlogging": "dev-master"``` to the require section of your composer.json
 - Add ```'DhErrorLogging'``` to the modules array in your application.config.php before any other module (or as close to the top as possible).
+- If you have a ./config/autoload/ directory set up for your project, you can drop the dherrorlogging.global.php.dist config file from config directory in it and change the values as you wish.
 
 ## Notes
-If you have a ./config/autoload/ directory set up for your project, you can drop the .dist config file from config directory in it and change the values as you wish.
-You can enable/disable the logging, you can configure several things such as template path for fatal errors or log writers.
+Via the dherrorlogging.global.php you can enable/disable the logging, you can configure several things such as template path for fatal errors or log writers.
 You can also overwrite the logger, processor or reference generator if you wish (and know what you are doing).
+When adding new log writer you can either add new config array for some of the the standard writers that don't need injection of other objects (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
+or identifier of registered log writer factory (registered in main config section ['log_writers']) to the '['dherrorlogging']['log_writers']' section.
 
-When adding db log writer you can use sql  schema from /data directory and the column map to set in the writer is following:
+When enabling the provided db log writer (DhErrorLogging\DbWriter) you can use the bellow sql schema (also found in /data/sql directory) to create log table:
 <pre>
-array(
-    'timestamp' => 'creation_time',
-    'priorityName' => 'priority',
-    'message' => 'message',
-    'extra' =>  array(
-        'file'  => 'file',
-        'line'  => 'line',
-        'trace' => 'trace',
-        'xdebug' => 'xdebug',
-        'uri' => 'uri',
-        'ip' => 'ip',
-        'session_id' => 'session_id'
-    )
-)
+CREATE TABLE IF NOT EXISTS `error_log` (
+  `log_id` int(11) NOT NULL AUTO_INCREMENT,
+  `creation_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `reference` varchar(6) DEFAULT '',
+  `priority` varchar(12) DEFAULT 'DEBUG',
+  `message` text,
+  `file` text,
+  `line` varchar(12),
+  `trace` text,
+  `xdebug` text,
+  `uri` text,
+  `ip` varchar(45) DEFAULT NULL,
+  `session_id` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`log_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 </pre>
