@@ -56,7 +56,7 @@ class Extras implements ProcessorInterface
                     . (isset($trace['function'])?$trace['function']:'')
                     ;
             }
-            $event['extra']['trace'] = "\n[Trace]\n" . $traceString . "\n";
+            $event['extra']['trace'] = $traceString . "\n";
         }
 
         return $event;
