@@ -6,8 +6,9 @@ return array(
     'dherrorlogging' => array(
         'enabled' => true,
         // set writers to be used.
-        // You can either use config array for the standard writers (db, stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
-        // or identifier of registered log writer (registered via WriterPluginManager)
+        // You can either add new config array for some of the the standard writers that don't need injection of other objects (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
+        // or identifier of registered log writer factory (registered in config section ['log_writers']).
+
         'log_writers' => array(
             'stream' => array(
                 'name' => 'stream',
@@ -17,6 +18,10 @@ return array(
                 ),
 
             ),
+            //'db' => array(
+            //    'name' => 'DhErrorLogging\DbWriter'
+            //)
+
         ),
 
         'priority' => Logger::WARN,
@@ -48,6 +53,7 @@ return array(
             'DhErrorLogging\Logger' => 'DhErrorLogging\Factory\Logger\LoggerFactory',
             'DhErrorLogging\ErrorReferenceGenerator' => 'DhErrorLogging\Factory\Generator\ErrorReferenceGeneratorFactory'
         ),
+
 
     ),
 );
