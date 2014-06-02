@@ -17,20 +17,51 @@ use Zend\Log\Filter;
 
 class LoggerFactory implements FactoryInterface
 {
+
     /**
      * {@inheritDoc}
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
+
+        // create new logger
+        $logger = new Logger();
+
         // get application config as array
         $config = $serviceLocator->get('Config');
         $config = $config['dherrorlogging'];
+
+        // get priority
+        $priority =  Logger::WARN;
+        if (isset($config['priority']) && is_int($config['priority'])) {
+            $priority = $config['priority'];
+        }
+        $priorityFilter = new Filter\Priority($priority);
         // get writers from config
-        $writersConfig =  (!empty($config['log_writers'])?$config['log_writers']:array());
+        if (!empty($config['log_writers']) && is_array($config['log_writers'])) {
+            $logWriterManager = $serviceLocator->get('LogWriterManager');
+            foreach ($config['log_writers'] as $writerSpecs) {
+                // skip if no name
+                if(empty($writerSpecs['name']) || !is_string($writerSpecs['name'])) {
+                   continue;
+                }
+                // get options
+                $options = array();
+                if (!empty($writerSpecs['options']) && is_array($writerSpecs['options'])) {
+                    $options = $writerSpecs['options'];
+                }
 
-        // create new logger
-        $logger = new Logger(array('writers' => $writersConfig));
+                // check if it is one of the known writers that can be created via config or retrieved from service manager
+                if ($logWriterManager->has($writerSpecs['name'])) {
+                    $writer = $logWriterManager->get($writerSpecs['name'], $options);
+                    // add priority filter
+                    $writer->addFilter($priorityFilter);
+                    // add writer to logger
+                    $logger->addWriter($writer);
+                }
 
+            }
+        }
 
         // add processors which will add some extra helpful info (IP, URI, trace,..) to the final log.
         $processor = $serviceLocator->get('LogProcessorManager')->get('DhErrorLogging\LoggerProcessor');
