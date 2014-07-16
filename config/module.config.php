@@ -10,14 +10,14 @@ return array(
         // or identifier of registered log writer factory (registered in config section ['log_writers']).
 
         'log_writers' => array(
-            'stream' => array(
-                'name' => 'stream',
-                'options' => array(
-                    'stream' => 'data/log/error.log',
-                    'log_separator' => "\n"
-                ),
-
-            ),
+            //'stream' => array(
+            //    'name' => 'stream',
+            //    'options' => array(
+            //        'stream' => 'data/log/error.log',
+            //        'log_separator' => "\n"
+            //    ),
+            //
+            //),
             //'db' => array(
             //    'name' => 'DhErrorLogging\DbWriter'
             //)

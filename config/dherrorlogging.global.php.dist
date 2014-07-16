@@ -7,50 +7,79 @@
  */
 use Zend\Log\Logger;
 
+$config = array(
+
+    /**
+     * Set if error logging should be enabled.
+     */
+    'enabled' => true,
+
+   /**
+    * Set writers to be used.
+    * You can either add new config array for some of the the standard writers that don't need injection of other objects
+    * (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
+    * or identifier of registered log writer factory (registered in general config section ['log_writers']).
+    */
+    'log_writers' => array(
+
+        /**
+         * Writing logs into file
+         *
+         * Make sure the specified file exists and it is writable
+         */
+        //'stream' => array( // writing logs to file
+        //    'name' => 'stream',
+        //    'options' => array(
+        //        'stream' => 'data/log/error.log', // make sure you create this file and it is writable.
+        //        'log_separator' => "\n"
+        //    ),
+        //
+        //),
+
+        /**
+         * Recording logs into database
+         *
+         * Make sure and have table "error_log" with correct schema in your database
+         */
+        //'db' => array( // writing logs to database
+        //    'name' => 'DhErrorLogging\DbWriter'
+        //)
+
+    ),
+
+   /**
+    * Priority to start logging from.
+    */
+    //'priority' => Logger::WARN,
+
+    'templates' => array(
+        /**
+         * Set path to the template to be used for fatal errors
+         *
+         * Leave commented for default one
+         */
+        //'fatal' => __DIR__ . '/../view/error/fatal.html',
+    ),
+
+
+    /**
+     * Zend\Db\Adapter\Adapter DI Alias
+     *
+     * Please specify the DI alias for the configured Zend\Db\Adapter\Adapter
+     * instance that DhErrorLogging should use. Applicable only if you want to log into database.
+     */
+     //'zend_db_adapter' => 'Zend\Db\Adapter\Adapter',
+
+);
+
+
 return array(
-         /*'dherrorlogging' => array(
-            'enabled' => true,
+    'dherrorlogging' => $config,
 
-            // set writers to be used.
-            // You can either add new config array for some of the the standard writers that don't need injection of other objects
-            // (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
-            // or identifier of registered log writer factory (registered in general config section ['log_writers']).
-            'log_writers' => array(
-                'stream' => array(
-                    'name' => 'stream',
-                    'options' => array(
-                        'stream' => 'data/log/error.log',
-                        'log_separator' => "\n"
-                    ),
-
-                ),
-                //'db' => array(
-                //    'name' => 'DhErrorLogging\DbWriter'
-                //)
-
-            ),
-
-            // priority to start logging from
-            'priority' => Logger::WARN,
-
-            'templates' => array(
-                // template for fatal errors
-                'fatal' => __DIR__ . '/../view/error/fatal.html',
-            )
-        ),*/
-
-        'log_writers' => array(
-            'factories' => array(
-                'DhErrorLogging\DbWriter' => 'DhErrorLogging\Factory\Writer\DbWriterFactory'
-            )
+    'service_manager' => array(
+        'aliases' => array(
+            // set db adapter
+            'dherrorlogging_zend_db_adapter' => (isset($settings['zend_db_adapter'])) ? $settings['zend_db_adapter']: 'Zend\Db\Adapter\Adapter',
         ),
-
-        'service_manager' => array(
-
-            'aliases' => array(
-                // set db adapter
-                'dherrorlogging_zend_db_adapter' => 'Zend\Db\Adapter\Adapter',
-            ),
-
-        ),
+    ),
 );
