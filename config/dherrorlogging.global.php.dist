@@ -79,7 +79,7 @@ return array(
     'service_manager' => array(
         'aliases' => array(
             // set db adapter
-            'dherrorlogging_zend_db_adapter' => (isset($settings['zend_db_adapter'])) ? $settings['zend_db_adapter']: 'Zend\Db\Adapter\Adapter',
+            'dherrorlogging_zend_db_adapter' => (isset($config['zend_db_adapter'])) ? $config['zend_db_adapter']: 'Zend\Db\Adapter\Adapter',
         ),
     ),
 );
