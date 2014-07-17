@@ -21,7 +21,7 @@ You can also overwrite the logger, processor or reference generator if you wish 
 When adding new log writer you can either add new config array for some of the the standard ZF2 writers that don't need injection of other objects (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
 or identifier of your own registered log writer factory (registered in main config section ['log_writers']) to the '['dherrorlogging']['log_writers']' section.
 
-When enabling the provided db log writer (DhErrorLogging\DbWriter) you can use the bellow sql schema (also found in /data/sql directory) to create log table:
+When enabling the provided db log writer (DhErrorLogging\DbWriter) and using MySQL you can use the bellow sql schema (also found in /data/sql directory) to create log table:
 <pre>
 CREATE TABLE IF NOT EXISTS `error_log` (
   `log_id` int(11) NOT NULL AUTO_INCREMENT,
