@@ -36,6 +36,7 @@ class DbWriterFactory implements FactoryInterface
                 'trace' => 'trace',
                 'xdebug' => 'xdebug',
                 'uri' => 'uri',
+                //'request' => 'request',
                 'ip' => 'ip',
                 'session_id' => 'session_id'
             )

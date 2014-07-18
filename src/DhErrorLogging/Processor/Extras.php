@@ -6,6 +6,8 @@ namespace DhErrorLogging\Processor;
 use Zend\Log\Processor\ProcessorInterface;
 use Zend\Http\PhpEnvironment\RemoteAddress;
 use Zend\Http\PhpEnvironment\Request;
+use Zend\Http\Request as HttpRequest;
+use Zend\Console\Request as ConsoleRequest;
 
 class Extras implements ProcessorInterface
 {
@@ -25,10 +27,17 @@ class Extras implements ProcessorInterface
      */
     public function process(array $event)
     {
+        $uri = '';
+        //$request = null;
+        if ($this->request instanceof HttpRequest) {
+            $uri = $this->request->getUriString();
+        }
+        //$request = $this->request->toString();
         // get request uri and IP address and add it to the extras of the logger
         $remoteAddress = new RemoteAddress();
         $extras = array(
-            'uri' => $this->request->getUriString(),
+            'uri' => $uri,
+            //'request' => $request,
             'ip' => $remoteAddress->getIpAddress(),
             'session_id' => session_id(),
         );
