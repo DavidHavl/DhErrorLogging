@@ -7,7 +7,6 @@ use Zend\Log\Processor\ProcessorInterface;
 use Zend\Http\PhpEnvironment\RemoteAddress;
 use Zend\Http\PhpEnvironment\Request;
 use Zend\Http\Request as HttpRequest;
-use Zend\Console\Request as ConsoleRequest;
 
 class Extras implements ProcessorInterface
 {
@@ -28,16 +27,16 @@ class Extras implements ProcessorInterface
     public function process(array $event)
     {
         $uri = '';
-        //$request = null;
+        $request = null;
         if ($this->request instanceof HttpRequest) {
             $uri = $this->request->getUriString();
         }
-        //$request = $this->request->toString();
+        $request = $this->request->toString();
         // get request uri and IP address and add it to the extras of the logger
         $remoteAddress = new RemoteAddress();
         $extras = array(
             'uri' => $uri,
-            //'request' => $request,
+            'request' => $request,
             'ip' => $remoteAddress->getIpAddress(),
             'session_id' => session_id(),
         );
@@ -46,13 +45,12 @@ class Extras implements ProcessorInterface
         }
         $event['extra'] = $extras;
 
-        // check if we have trace, else get it explicitly
+         // check if we have trace, else get it explicitly
         if (empty($event['extra']['trace'])) {
             $event['extra']['trace'] = $this->getTrace();
         }
 
         // check if there is a trace as an array and format it as simple string
-        // this is necessary mainly because Logger::registerExceptionHandler and our getTrace method sets trace as array rather than string.
         if (!empty($event['extra']['trace']) && is_array($event['extra']['trace'])) {
             $traceString = '';
             foreach ($event['extra']['trace'] as $index=>$trace) {
@@ -86,7 +84,6 @@ class Extras implements ProcessorInterface
         } else {
             $trace = debug_backtrace();
         }
-
         if (empty($trace)) {
             return null;
         }
@@ -95,7 +92,8 @@ class Extras implements ProcessorInterface
         array_shift($trace); // ignore $this->process()
         $i = 0;
         $returnArray = array();
-        while (isset($trace[$i]['class']) && false !== strpos($trace[$i]['class'], 'Zend\\Log')) {
+        while (isset($trace[$i]['class']) && false === strpos($trace[$i]['class'], 'Zend\\Log')
+            && false === strpos($trace[$i]['class'], 'DhErrorLogging')) {
             $i++;
             $returnArray[] = array(
                 'file'     => isset($trace[$i-1]['file'])   ? $trace[$i-1]['file']   : null,
