@@ -50,8 +50,8 @@ class Extras implements ProcessorInterface
             $event['extra']['trace'] = $this->getTrace();
         }
 
-        // check if there is a trace as an array and format it as simple string
-        if (!empty($event['extra']['trace']) && is_array($event['extra']['trace'])) {
+        // check if trace is an array and format it as simple string
+        if (is_array($event['extra']['trace'])) {
             $traceString = '';
             foreach ($event['extra']['trace'] as $index=>$trace) {
                 // do not log the logger itself
@@ -63,7 +63,7 @@ class Extras implements ProcessorInterface
                     . (isset($trace['function'])?$trace['function']:'')
                     ;
             }
-            $event['extra']['trace'] = $traceString . "\n";
+            $event['extra']['trace'] = $traceString . "\n"; // add new line for file logs
         }
 
         return $event;
@@ -85,7 +85,7 @@ class Extras implements ProcessorInterface
             $trace = debug_backtrace();
         }
         if (empty($trace)) {
-            return null;
+            return '';
         }
 
         array_shift($trace); // ignore $this->getTrace();
