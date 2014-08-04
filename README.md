@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS `error_log` (
   `trace` text,
   `xdebug` text,
   `uri` text,
+  `request` text,
   `ip` varchar(45) DEFAULT NULL,
   `session_id` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`log_id`)
