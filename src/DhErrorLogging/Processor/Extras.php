@@ -4,15 +4,15 @@
 namespace DhErrorLogging\Processor;
 
 use Zend\Log\Processor\ProcessorInterface;
+use Zend\Stdlib\RequestInterface;
 use Zend\Http\PhpEnvironment\RemoteAddress;
-use Zend\Http\PhpEnvironment\Request;
 use Zend\Http\Request as HttpRequest;
 
 class Extras implements ProcessorInterface
 {
     protected $request = null;
 
-    public function __construct(Request $request)
+    public function __construct(RequestInterface $request)
     {
         $this->request = $request;
     }
@@ -31,7 +31,9 @@ class Extras implements ProcessorInterface
         if ($this->request instanceof HttpRequest) {
             $uri = $this->request->getUriString();
         }
-        $request = $this->request->toString();
+        if (method_exists($this->request, 'toString')) {
+            $request = $this->request->toString();
+        }
         // get request uri and IP address and add it to the extras of the logger
         $remoteAddress = new RemoteAddress();
         $extras = array(
