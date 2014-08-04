@@ -113,7 +113,7 @@ class Module
 
             $error = error_get_last();
             // log only errors
-            if (null === $error || $error['type'] !== E_ERROR) {
+            if (null === $error || !isset($error['type']) || $error['type'] !== E_ERROR) {
                 return;
             }
 
