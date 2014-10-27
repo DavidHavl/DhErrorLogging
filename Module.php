@@ -71,7 +71,7 @@ class Module
         // Get shared event manager
         $sharedEventManager  = $app->getEventManager()->getSharedManager();
         // Handle framework specific errors
-        $sharedEventManager->attach('Zend\Mvc\Application', array(MvcEvent::EVENT_DISPATCH_ERROR, MvcEvent::EVENT_RENDER_ERROR), function($event) use ($logger, $generator) {
+        $sharedEventManager->attach('Zend\Mvc\Application', array(MvcEvent::EVENT_DISPATCH_ERROR, MvcEvent::EVENT_RENDER_ERROR), function($event) use ($logger, $generator, $config) {
 
             // check if event is error
             if (!$event->isError()) {
@@ -99,7 +99,7 @@ class Module
             }
 
             // log it
-            $priority = Logger::ERR;
+            $priority = $config['dherrorlogging']['priority'];
             $logger->log($priority, $message, $extras);
 
             // hijack error view and add error reference to the message

@@ -18,9 +18,26 @@ return array(
             //    ),
             //
             //),
-            //'db' => array(
-            //    'name' => 'DhErrorLogging\DbWriter'
-            //)
+//            'db' => array(
+//                'name' => 'DhErrorLogging\DbWriter',
+//                'table_name' => 'error_log',
+//                'table_map' => array(
+//                    'timestamp' => 'creation_time',
+//                    'priorityName' => 'priority',
+//                    'message' => 'message',
+//                    'extra' =>  array(
+//                        'reference'  => 'reference',
+//                        'file'  => 'file',
+//                        'line'  => 'line',
+//                        'trace' => 'trace',
+//                        'xdebug' => 'xdebug',
+//                        'uri' => 'uri',
+//                        'request' => 'request',
+//                        'ip' => 'ip',
+//                        'session_id' => 'session_id'
+//                    )
+//                )
+//            )
 
         ),
 
