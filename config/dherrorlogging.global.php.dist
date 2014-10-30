@@ -42,30 +42,30 @@ $config = array(
          * Make sure and have table "error_log" with correct schema in your database
          */
          'db' => array(
-//                'name' => 'DhErrorLogging\DbWriter',
-                'table_name' => 'error_log',
-//                'table_map' => array(
-//                    'timestamp' => 'creation_time',
-//                    'priorityName' => 'priority',
-//                    'message' => 'message',
-//                    'extra' =>  array(
-//                        'reference'  => 'reference',
-//                        'file'  => 'file',
-//                        'line'  => 'line',
-//                        'trace' => 'trace',
-//                        'xdebug' => 'xdebug',
-//                        'uri' => 'uri',
-//                        'request' => 'request',
-//                        'ip' => 'ip',
-//                        'session_id' => 'session_id'
-//                    )
+//           'name' => 'DhErrorLogging\DbWriter',
+//           'options' => array(
+//               'table_name' => 'error_log',
+//               'table_map' => array(
+//                   'timestamp' => 'creation_time',
+//                   'priorityName' => 'priority',
+//                   'message' => 'message',
+//                   'reference'  => 'reference',
+//                   'file'  => 'file',
+//                   'line'  => 'line',
+//                   'trace' => 'trace',
+//                   'xdebug' => 'xdebug',
+//                   'uri' => 'uri',
+//                   'request' => 'request',
+//                   'ip' => 'ip',
+//                   'session_id' => 'session_id'
 //                )
+//             )
             )
 
     ),
 
    /**
-    * Priority to start logging from.
+    * Logger priority level to start logging from.
     */
     //'priority' => Logger::WARN,
 

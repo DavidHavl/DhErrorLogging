@@ -26,6 +26,7 @@ class Extras implements ProcessorInterface
      */
     public function process(array $event)
     {
+
         $uri = '';
         $request = null;
         if ($this->request instanceof HttpRequest) {
@@ -54,18 +55,28 @@ class Extras implements ProcessorInterface
 
         // check if trace is an array and format it as simple string
         if (is_array($event['extra']['trace'])) {
+
             $traceString = '';
-            foreach ($event['extra']['trace'] as $index=>$trace) {
-                // do not log the logger itself
+            $trace = $event['extra']['trace'];
+            $index = 1;
+            for ($i = 0; $i < count($trace); $i++) {
+                if (isset($trace[$i]['class']) && (false !== strpos($trace[$i]['class'], 'Zend\\Log')
+                || false !== strpos($trace[$i]['class'], 'DhErrorLogging'))) {
+                    continue;
+                }
                 $traceString .= '#' . $index
-                    . (isset($trace['file'])?$trace['file']:'')
-                    . "(" . (isset($trace['line'])?$trace['line']:'') . "): "
-                    . (isset($trace['class'])?$trace['class']:'')
-                    . (isset($trace['type'])?$trace['type']:' ')
-                    . (isset($trace['function'])?$trace['function']:'')
-                    ;
+                    . (isset($trace[$i-1]['file'])?$trace[$i-1]['file']:(($i== 0 && !empty($event['extra']['file']))?$event['extra']['file']:''))
+                    . "(" . (isset($trace[$i-1]['line'])?$trace[$i-1]['line']:(($i== 0 && !empty($event['extra']['line']))?$event['extra']['line']:'')) . "): "
+                    . (isset($trace[$i]['class'])?$trace[$i]['class']:'')
+                    . (isset($trace[$i]['type'])?$trace[$i]['type']:' ')
+                    . (isset($trace[$i]['function'])?$trace[$i]['function']:'')
+                    . "\n";
+                ;
+                $index++;
             }
-            $event['extra']['trace'] = $traceString . "\n"; // add new line for file logs
+
+
+            $event['extra']['trace'] = $traceString . "\n\n"; // add new line for file logs
         }
 
         return $event;
@@ -89,7 +100,6 @@ class Extras implements ProcessorInterface
         if (empty($trace)) {
             return '';
         }
-
         array_shift($trace); // ignore $this->getTrace();
         array_shift($trace); // ignore $this->process()
         $i = 0;
@@ -98,8 +108,8 @@ class Extras implements ProcessorInterface
             && false === strpos($trace[$i]['class'], 'DhErrorLogging')) {
             $i++;
             $returnArray[] = array(
-                'file'     => isset($trace[$i-1]['file'])   ? $trace[$i-1]['file']   : null,
-                'line'     => isset($trace[$i-1]['line'])   ? $trace[$i-1]['line']   : null,
+                'file'     => isset($trace[$i]['file'])   ? $trace[$i]['file']   : null,
+                'line'     => isset($trace[$i]['line'])   ? $trace[$i]['line']   : null,
                 'class'    => isset($trace[$i]['class'])    ? $trace[$i]['class']    : null,
                 'function' => isset($trace[$i]['function']) ? $trace[$i]['function'] : null,
             );

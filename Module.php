@@ -71,12 +71,15 @@ class Module
         // Get shared event manager
         $sharedEventManager  = $app->getEventManager()->getSharedManager();
         // Handle framework specific errors
-        $sharedEventManager->attach('Zend\Mvc\Application', array(MvcEvent::EVENT_DISPATCH_ERROR, MvcEvent::EVENT_RENDER_ERROR), function($event) use ($logger, $generator, $config) {
+        $sharedEventManager->attach('Zend\Mvc\Application', array(MvcEvent::EVENT_DISPATCH_ERROR, MvcEvent::EVENT_RENDER_ERROR), function($event) use ($logger, $generator) {
 
             // check if event is error
             if (!$event->isError()) {
                 return;
             }
+
+
+            $errorType = E_ERROR;
             // get message and exception (if present)
             $message = $event->getError();
             $exception = $event->getParam('exception');
@@ -90,17 +93,26 @@ class Module
                 $message =        $exception->getMessage();
                 $extras['file'] =  $exception->getFile();
                 $extras['line']  = $exception->getLine();
-                $extras['trace'] = $exception->getTraceAsString();
+                $extras['trace'] = $exception->getTrace();
 
                 // check if xdebug is enabled and message present in which case add it to the extras
                 if (isset($exception->xdebug_message)) {
-                    $extra['xdebug'] = $exception->xdebug_message;
+                    $extras['xdebug'] = $exception->xdebug_message;
+                }
+
+                if (method_exists($exception, 'getSeverity')) {
+                    $errorType = $exception->getSeverity();
                 }
             }
 
+            // translate error type to log type.
+            $logType = Logger::ERR;
+            if (isset(Logger::$errorPriorityMap[$errorType])) {
+                $logType = Logger::$errorPriorityMap[$errorType];
+            }
+
             // log it
-            $priority = $config['dherrorlogging']['priority'];
-            $logger->log($priority, $message, $extras);
+            $logger->log($logType, $message, $extras);
 
             // hijack error view and add error reference to the message
             $originalMessage = $event->getResult()->getVariable('message');
@@ -108,7 +120,7 @@ class Module
 
         });
 
-        // catch also fatal errors which woud not show the error template.
+        // catch also fatal errors which would not show the regular error template.
         register_shutdown_function(function () use ($logger, $generator, $config) {
 
             $error = error_get_last();
