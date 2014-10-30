@@ -41,9 +41,9 @@ $config = array(
          *
          * Make sure and have table "error_log" with correct schema in your database
          */
-        //'db' => array( // writing logs to database
-        //    'name' => 'DhErrorLogging\DbWriter',
-//                'table_name' => 'error_log',
+         'db' => array(
+//                'name' => 'DhErrorLogging\DbWriter',
+                'table_name' => 'error_log',
 //                'table_map' => array(
 //                    'timestamp' => 'creation_time',
 //                    'priorityName' => 'priority',
@@ -60,7 +60,7 @@ $config = array(
 //                        'session_id' => 'session_id'
 //                    )
 //                )
-        //)
+            )
 
     ),
 

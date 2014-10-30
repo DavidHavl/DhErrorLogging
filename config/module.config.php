@@ -18,9 +18,9 @@ return array(
             //    ),
             //
             //),
-//            'db' => array(
+            'db' => array(
 //                'name' => 'DhErrorLogging\DbWriter',
-//                'table_name' => 'error_log',
+                'table_name' => 'error_log',
 //                'table_map' => array(
 //                    'timestamp' => 'creation_time',
 //                    'priorityName' => 'priority',
@@ -37,7 +37,7 @@ return array(
 //                        'session_id' => 'session_id'
 //                    )
 //                )
-//            )
+            )
 
         ),
 
