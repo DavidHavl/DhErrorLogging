@@ -70,13 +70,12 @@ class Extras implements ProcessorInterface
                     . (isset($trace[$i]['class'])?$trace[$i]['class']:'')
                     . (isset($trace[$i]['type'])?$trace[$i]['type']:' ')
                     . (isset($trace[$i]['function'])?$trace[$i]['function']:'')
-                    . "\n";
+                    . "\n"; // add new line for file logs
                 ;
                 $index++;
             }
 
-
-            $event['extra']['trace'] = $traceString . "\n\n"; // add new line for file logs
+            $event['extra']['trace'] = $traceString . "\n\n"; // add 2x new line for file logs
         }
 
         return $event;

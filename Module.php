@@ -78,7 +78,6 @@ class Module
                 return;
             }
 
-
             $errorType = E_ERROR;
             // get message and exception (if present)
             $message = $event->getError();
@@ -122,10 +121,13 @@ class Module
 
         // catch also fatal errors which would not show the regular error template.
         register_shutdown_function(function () use ($logger, $generator, $config) {
-
             $error = error_get_last();
-            // log only errors
-            if (null === $error || !isset($error['type']) || $error['type'] !== E_ERROR) {
+            // check we have valid error object
+            if (null === $error || !isset($error['type'])) {
+                return;
+            }
+            // allow only catchable errors
+            if ($error['type'] !== E_ERROR && $error['type'] !== E_PARSE && $error['type'] !== E_RECOVERABLE_ERROR) {
                 return;
             }
 
@@ -142,8 +144,13 @@ class Module
                 'line' => $error['line']
             );
 
+            // translate error type to log type.
+            $logType = Logger::ERR;
+            if (isset(Logger::$errorPriorityMap[$error['type']])) {
+                $logType = Logger::$errorPriorityMap[$error['type']];
+            }
             // log error using logger
-            $logger->log(Logger::$errorPriorityMap[$error['type']], $error['message'], $extras);
+            $logger->log($logType, $error['message'], $extras);
 
             // get absolute path of the template to render (the shutdown method sometimes changes relative path).
             $fatalTemplatePath = dirname(__FILE__) . '/view/error/fatal.html';
