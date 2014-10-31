@@ -3,9 +3,9 @@ ZF2 application error logging
 
 Full featured Error logging module for ZF2 application
 
-Takes care of framework specific exceptions, php errors and even fatal errors.
-Each log record has also an error reference number that users see on error page (error or fatal) which helps to identify the problem when reporting it back to you.
-The module also adds several useful info to the final log such as IP, url called, session id, backtrace,...
+Takes care of framework specific exceptions, php errors and even fatal errors or parse errors.
+Each log record also has an error reference number that users see on error page (error or fatal) which helps to identify the problem when reporting it back to you.
+The module also adds several useful info to the final log such as IP, request, url called, session id, backtrace,...
 
 ## Installation
 
@@ -40,5 +40,5 @@ CREATE TABLE IF NOT EXISTS `error_log` (
   PRIMARY KEY (`log_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 </pre>
-
-Make sure that you have properly configured Zend\Db\Adapter\Adapter.
+Or use your own tbale and field names but make sure you adjust the ['db']['options']['table_name'] and ['db']['options']['table_map'] accordingly.
+Also make sure that you have properly configured Zend\Db\Adapter\Adapter.
