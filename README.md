@@ -42,3 +42,5 @@ CREATE TABLE IF NOT EXISTS `error_log` (
 </pre>
 Or use your own tbale and field names but make sure you adjust the ['db']['options']['table_name'] and ['db']['options']['table_map'] accordingly.
 Also make sure that you have properly configured Zend\Db\Adapter\Adapter.
+
+In order for the error page to return http status code 500 you should have PHP display_errors off.
