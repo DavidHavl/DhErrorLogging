@@ -2,12 +2,14 @@
 
 namespace DhErrorLogging;
 
-use Zend\Mvc\ModuleRouteListener;
 use Zend\Mvc\MvcEvent;
 use Zend\Log\Logger;
 use Zend\Db\Adapter;
+use Zend\ModuleManager\Feature;
 
-class Module
+class Module implements
+    Feature\AutoloaderProviderInterface,
+    Feature\ConfigProviderInterface
 {
     public function getConfig()
     {
@@ -30,17 +32,6 @@ class Module
 
 
     public function onBootstrap(MvcEvent $e)
-    {
-        $eventManager        = $e->getApplication()->getEventManager();
-        $moduleRouteListener = new ModuleRouteListener();
-        $moduleRouteListener->attach($eventManager);
-
-
-        // set logging of errors
-        $this->initErrorLogger($e);
-    }
-
-    public function initErrorLogger($e)
     {
 
         $app = $e->getApplication();
