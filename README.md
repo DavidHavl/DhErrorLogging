@@ -13,6 +13,7 @@ The module also adds several useful info to the final log such as IP, request, u
 - Add ```'DhErrorLogging'``` to the modules array in your application.config.php before any other module (or as close to the top as possible).
 - If you have a ./config/autoload/ directory set up for your project, you can drop the dherrorlogging.global.php.dist (rename it to dherrorlogging.global.php) config file from config directory in it and change the values as you wish.
 - Enable at least one logger (in the dherrorlogging.global.php "log_writers" section).
+- To display an Error Reference in your exception template (error/404, error/index) make sure you echo the error reference variable <?php echo $this->errorReference; ?>
 
 ## Notes
 Via the dherrorlogging.global.php you can enable/disable the logging functionality itself as well as configure several other things such as template path for fatal errors or log writers.
@@ -27,7 +28,8 @@ CREATE TABLE IF NOT EXISTS `error_log` (
   `log_id` int(11) NOT NULL AUTO_INCREMENT,
   `creation_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `reference` varchar(6) DEFAULT '',
-  `priority` varchar(12) DEFAULT 'DEBUG',
+  `type` varchar(10) DEFAULT 'ERROR',
+  `priority` varchar(6) DEFAULT 'DEBUG',
   `message` text,
   `file` text,
   `line` varchar(12),

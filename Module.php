@@ -5,12 +5,15 @@ namespace DhErrorLogging;
 use Zend\Mvc\MvcEvent;
 use Zend\Log\Logger;
 use Zend\Db\Adapter;
+use Zend\View\Model;
 use Zend\ModuleManager\Feature;
 
 class Module implements
+    Feature\BootstrapListenerInterface,
     Feature\AutoloaderProviderInterface,
     Feature\ConfigProviderInterface
 {
+
     public function getConfig()
     {
         return include __DIR__ . '/config/module.config.php';
@@ -48,68 +51,170 @@ class Module implements
         $generator = $serviceManager->get('DhErrorLogging\ErrorReferenceGenerator');
 
         // Handle native PHP errors
+        if (!empty($config['dherrorlogging']['error_types']['native'])) {
+            $this->setErrorHandler($logger, $generator);
+        }
 
-        // convert php errors into exceptions so that it is caught by same process as exceptions.
-        set_error_handler(function ($level, $message, $file, $line) use ($logger) {
+        // Handle those exceptions that do not get caught by MVC
+        if (!empty($config['dherrorlogging']['error_types']['exceptions'])) {
+            $this->setExceptionHandler($logger, $generator);
+        }
+
+
+
+        // Handle framework specific errors
+        $eventTypes = array();
+        if (!empty($config['dherrorlogging']['error_types']['dispatch'])) {
+            $eventTypes[] = MvcEvent::EVENT_DISPATCH_ERROR;
+        }
+        if (!empty($config['dherrorlogging']['error_types']['render'])) {
+            $eventTypes[] = MvcEvent::EVENT_RENDER_ERROR;
+        }
+
+        if (!empty($eventTypes)) {
+            // Get event manager
+            $eventManager = $app->getEventManager()->getSharedManager();
+            // Handle framework specific errors
+            $eventManager->attach('Zend\Mvc\Application', $eventTypes, function ($event) use ($logger, $generator) {
+
+                // check if event is error
+                if (!$event->isError()) {
+                    return;
+                }
+
+                foreach ($event->getParams() as $key=>$val) {
+                    echo $key;
+                    echo '<br />';
+                }
+
+                $errorType = E_ERROR;
+                // get message and exception (if present)
+                $message = $event->getError();
+                $exception = $event->getParam('exception');
+                // generate unique reference for this error
+                $errorReference = $generator->generate();
+                $extras = array(
+                    'reference' => $errorReference,
+                    'type'  => 'MVC'
+                );
+                // check if event has exception and populate extras array.
+                if (!empty($exception)) {
+                    $message = $exception->getMessage();
+                    $extras['file'] = $exception->getFile();
+                    $extras['line'] = $exception->getLine();
+                    $extras['trace'] = $exception->getTrace();
+
+                    // check if xdebug is enabled and message present in which case add it to the extras
+                    if (isset($exception->xdebug_message)) {
+                        $extras['xdebug'] = $exception->xdebug_message;
+                    }
+
+                    if (method_exists($exception, 'getSeverity')) {
+                        $errorType = $exception->getSeverity();
+                    }
+                }
+
+                // translate error type to log type.
+                $logType = Logger::ERR;
+                if (isset(Logger::$errorPriorityMap[$errorType])) {
+                    $logType = Logger::$errorPriorityMap[$errorType];
+                }
+
+                // log it
+                $logger->log($logType, $message, $extras);
+
+                // hijack error view and add error reference to the message
+                $viewModel = $event->getResult();
+                if ($viewModel instanceof ModelInterface) {
+                    $originalMessage = $viewModel->getVariable('message');
+                    $viewModel->setVariable('message', $originalMessage . '<br /> Error Reference: ' . $errorReference);
+                }
+            });
+        }
+
+        // Handle fatal errors
+        if (!empty($config['dherrorlogging']['error_types']['fatal'])) {
+            $this->setFatalErrorHandler($logger, $generator, $config);
+        }
+    }
+
+
+
+    public function setErrorHandler($logger, $generator)
+    {
+        // Handle native PHP errors
+        set_error_handler(function ($level, $message, $file, $line) use ($logger, $generator) {
             $minErrorLevel = error_reporting();
             if ($minErrorLevel & $level) {
-                throw new \ErrorException($message, $code = 0, $level, $file, $line);
+                $extra = array(
+                    'type'  => 'ERROR',
+                    'file'  => $file,
+                    'line'  => $line,
+                    'reference' => $generator->generate()
+                );
+                // translate error type to log type.
+                $logType = Logger::ERR;
+                if (isset(Logger::$errorPriorityMap[$level])) {
+                    $logType = Logger::$errorPriorityMap[$level];
+                }
+
+                // log it
+                $logger->log($logType, $message, $extra);
             }
             // return false to not continue native handler
             return false;
         });
 
-        // Get shared event manager
-        $sharedEventManager  = $app->getEventManager()->getSharedManager();
-        // Handle framework specific errors
-        $sharedEventManager->attach('Zend\Mvc\Application', array(MvcEvent::EVENT_DISPATCH_ERROR, MvcEvent::EVENT_RENDER_ERROR), function($event) use ($logger, $generator) {
+    }
 
-            // check if event is error
-            if (!$event->isError()) {
-                return;
-            }
 
-            $errorType = E_ERROR;
-            // get message and exception (if present)
-            $message = $event->getError();
-            $exception = $event->getParam('exception');
-            // generate unique reference for this error
-            $errorReference = $generator->generate();
-            $extras = array(
-                'reference' => $errorReference
-            );
-            // check if event has exception and populate extras array.
-            if (!empty($exception)) {
-                $message =        $exception->getMessage();
-                $extras['file'] =  $exception->getFile();
-                $extras['line']  = $exception->getLine();
-                $extras['trace'] = $exception->getTrace();
+    public function setExceptionHandler($logger, $generator)
+    {
+        set_exception_handler(function ($exception) use ($logger, $generator) {
+            $logs = array();
 
-                // check if xdebug is enabled and message present in which case add it to the extras
+            do {
+                $priority = Logger::ERR;
+                if ($exception instanceof \ErrorException && isset(Logger::$errorPriorityMap[$exception->getSeverity()])) {
+                    $priority = Logger::$errorPriorityMap[$exception->getSeverity()];
+                }
+
+                $extra = array(
+                    'type'  => 'EXCEPTION',
+                    'file'  => $exception->getFile(),
+                    'line'  => $exception->getLine(),
+                    'trace' => $exception->getTrace(),
+                    'reference' => $generator->generate()
+                );
                 if (isset($exception->xdebug_message)) {
-                    $extras['xdebug'] = $exception->xdebug_message;
+                    $extra['xdebug'] = $exception->xdebug_message;
                 }
 
-                if (method_exists($exception, 'getSeverity')) {
-                    $errorType = $exception->getSeverity();
-                }
+                $logs[] = array(
+                    'priority' => $priority,
+                    'message'  => $exception->getMessage(),
+                    'extra'    => $extra,
+                );
+                $exception = $exception->getPrevious();
+            } while ($exception);
+
+
+            foreach (array_reverse($logs) as $log) {
+                $logger->log($log['priority'], $log['message'], $log['extra']);
             }
-
-            // translate error type to log type.
-            $logType = Logger::ERR;
-            if (isset(Logger::$errorPriorityMap[$errorType])) {
-                $logType = Logger::$errorPriorityMap[$errorType];
-            }
-
-            // log it
-            $logger->log($logType, $message, $extras);
-
-            // hijack error view and add error reference to the message
-            $originalMessage = $event->getResult()->getVariable('message');
-            $event->getResult()->setVariable('message', $originalMessage . '<br /> Error Reference: ' .  $errorReference);
-
+            // return false to not continue other handlers
+            return false;
         });
+    }
 
+
+    public function setMvcErrorHandler($logger, $generator)
+    {
+
+    }
+
+    public function setFatalErrorHandler($logger, $generator, $config)
+    {
         // catch also fatal errors which would not show the regular error template.
         register_shutdown_function(function () use ($logger, $generator, $config) {
             $error = error_get_last();
@@ -123,16 +228,17 @@ class Module implements
             }
 
             // clean any previous output from buffer
-            while( ob_get_level() > 0 ) {
+            while (ob_get_level() > 0) {
                 ob_end_clean();
             }
 
             $errorReference = $generator->generate();
 
             $extras = array(
+                'type'  => 'FATAL',
                 'reference' => $errorReference,
-                'file' => $error['file'],
-                'line' => $error['line']
+                'file'      => $error['file'],
+                'line'      => $error['line']
             );
 
             // translate error type to log type.
@@ -146,18 +252,17 @@ class Module implements
             // get absolute path of the template to render (the shutdown method sometimes changes relative path).
             $fatalTemplatePath = dirname(__FILE__) . '/view/error/fatal.html';
             if (!empty($config['dherrorlogging']['templates']['fatal'])
-                && file_exists($config['dherrorlogging']['templates']['fatal'])) {
+                && file_exists($config['dherrorlogging']['templates']['fatal'])
+            ) {
 
                 $fatalTemplatePath = $config['dherrorlogging']['templates']['fatal'];
             }
             // read content of file
             $body = file_get_contents($fatalTemplatePath);
             // inject error reference
-            $body = str_replace('%__ERROR_REFERENCE__%', 'Error Reference: ' .  $errorReference, $body);
+            $body = str_replace('%__ERROR_REFERENCE__%', 'Error Reference: ' . $errorReference, $body);
             echo $body;
-            die(1);
+            exit();
         });
-
     }
-
 }

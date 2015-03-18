@@ -5,6 +5,20 @@ return array(
 
     'dherrorlogging' => array(
         'enabled' => true,
+
+        // error types to be logged
+        'error_types' => array(
+            // Exceptions (those other than within dispatch or render phase)
+            'exception' => true,
+            // Native PHP errors
+            'native' => true,
+            // Dispatch errors, triggered in case of a problem during dispatch process (unknown controller...) (404, 403,...)
+            'dispatch' => true,
+            // Render errors, triggered in case of a problem during the render process (no renderer found...).
+            'render' => true,
+            // Fatal errors that halt execution of further code
+            'fatal' => true,
+        ),
         // set writers to be used.
         // You can either add new config array for some of the the standard writers that don't need injection of other objects (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
         // or identifier of registered log writer factory (registered in config section ['log_writers']).
@@ -24,6 +38,7 @@ return array(
 //                   'table_name' => 'error_log',
 //                   'table_map' => array(
 //                       'timestamp' => 'creation_time',
+//                       'type' => 'type'
 //                       'priorityName' => 'priority',
 //                       'message' => 'message',
 //                       'reference'  => 'reference',
@@ -41,8 +56,7 @@ return array(
 
         ),
 
-        'priority' => Logger::WARN,
-
+        
         'templates' => array(
             'fatal' => __DIR__ . '/../view/error/fatal.html',
         )

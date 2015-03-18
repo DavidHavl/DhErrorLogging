@@ -43,10 +43,11 @@ class DbWriterFactory implements FactoryInterface
 
         // create a map between errors and db table columns
         $map = array(
-            'timestamp'    => 'creation_time',
-            'priorityName' => 'priority',
-            'message'      => 'message',
-            'extra'        => array(
+            'timestamp'      => 'creation_time',
+            'priorityName'   => 'priority',
+            'message'        => 'message',
+            'extra' => array(
+                'type'       => 'type',
                 'reference'  => 'reference',
                 'file'       => 'file',
                 'line'       => 'line',
@@ -77,10 +78,6 @@ class DbWriterFactory implements FactoryInterface
 
         // create new database writer
         $dbWriter = new Writer\Db($dbAdapter, $dbTableName, $map);
-
-        // add filter to log only specified (and above) error types
-        $filter = new Filter\Priority($config['priority']);
-        $dbWriter->addFilter($filter);
 
         return $dbWriter;
     }
