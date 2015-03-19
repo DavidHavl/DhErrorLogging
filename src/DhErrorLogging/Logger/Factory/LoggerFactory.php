@@ -1,10 +1,10 @@
 <?php
 /**
- * @copyright  Copyright 2009-2014 Davidhavl.com
+ * @copyright  Copyright 2009-2015 Davidhavl.com
  * @license    MIT , http://davidhavl.com/license/MIT
  * @author     davidhavl
  */
-namespace DhErrorLogging\Factory\Logger;
+namespace DhErrorLogging\Logger\Factory;
 
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
@@ -28,7 +28,7 @@ class LoggerFactory implements FactoryInterface
         $logger = new Logger();
 
         // get application config as array
-        $config = $serviceLocator->get('Config');
+        $config = $serviceLocator->get('config');
         $config = $config['dherrorlogging'];
 
         // get priority

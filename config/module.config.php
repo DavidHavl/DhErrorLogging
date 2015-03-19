@@ -9,15 +9,21 @@ return array(
         // error types to be logged
         'error_types' => array(
             // Exceptions (those other than within dispatch or render phase)
-            'exception' => true,
+            'exceptions' => true,
             // Native PHP errors
             'native' => true,
-            // Dispatch errors, triggered in case of a problem during dispatch process (unknown controller...) (404, 403,...)
+            // Dispatch errors, triggered in case of a problem or exception anywhere during dispatch process (unknown controller, exception thrown inside of controller,...)
             'dispatch' => true,
+            // Router no match  (route not found = 404).
+            'dispatch\router_no_match' => true,
             // Render errors, triggered in case of a problem during the render process (no renderer found...).
             'render' => true,
             // Fatal errors that halt execution of further code
             'fatal' => true,
+        ),
+        // filter out some of the exception types (i.e. \Exception\UnauthorizedException)
+        'exception_filter' => array(
+            '\Exception\UnauthorizedException' // 403
         ),
         // set writers to be used.
         // You can either add new config array for some of the the standard writers that don't need injection of other objects (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
@@ -64,13 +70,13 @@ return array(
 
     'log_writers' => array(
         'factories' => array(
-            'DhErrorLogging\DbWriter' => 'DhErrorLogging\Factory\Writer\DbWriterFactory'
+            'DhErrorLogging\DbWriter' => 'DhErrorLogging\Writer\Factory\DbWriterFactory'
         )
     ),
 
     'log_processors' => array(
         'factories' => array(
-            'DhErrorLogging\LoggerProcessor' => 'DhErrorLogging\Factory\Processor\ExtrasProcessorFactory'
+            'DhErrorLogging\LoggerProcessor' => 'DhErrorLogging\Processor\Factory\ExtrasProcessorFactory'
         )
     ),
 
@@ -81,8 +87,10 @@ return array(
         ),
 
         'factories' => array(
-            'DhErrorLogging\Logger' => 'DhErrorLogging\Factory\Logger\LoggerFactory',
-            'DhErrorLogging\ErrorReferenceGenerator' => 'DhErrorLogging\Factory\Generator\ErrorReferenceGeneratorFactory'
+            'DhErrorLogging\Logger' => 'DhErrorLogging\Logger\Factory\LoggerFactory',
+            'DhErrorLogging\Filter\ExceptionFilter' => 'DhErrorLogging\Filter\Factory\ExceptionFilterFactory',
+            'DhErrorLogging\Generator\ErrorReferenceGenerator' => 'DhErrorLogging\Generator\Factory\ErrorReferenceGeneratorFactory',
+            'DhErrorLogging\Options\ModuleOptions' => 'DhErrorLogging\Options\Factory\ModuleOptionsFactory'
         ),
 
 

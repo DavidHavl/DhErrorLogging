@@ -1,10 +1,10 @@
 <?php
 /**
- * @copyright  Copyright 2009-2014 Davidhavl.com
+ * @copyright  Copyright 2009-2015 Davidhavl.com
  * @license    MIT , http://davidhavl.com/license/MIT
  * @author     davidhavl
  */
-namespace DhErrorLogging\Factory\Writer;
+namespace DhErrorLogging\Writer\Factory;
 
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;

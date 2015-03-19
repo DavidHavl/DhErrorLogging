@@ -19,15 +19,23 @@ $config = array(
      */
     'error_types' => array(
         // Exceptions (those other than within dispatch or render phase)
-        'exception' => true,
+        'exceptions' => true,
         // Native PHP errors
         'native' => true,
-        // Dispatch errors, triggered in case of a problem during dispatch process (unknown controller...) (404, 403,...)
+        // Dispatch errors, triggered in case of a problem or exception anywhere during dispatch process (unknown controller, exception thrown inside of controller,...)
         'dispatch' => true,
-        // Render errors, triggered in case of a problem during the render process (no renderer found, missing view variable,...).
+        // Router no match  (route not found = 404).
+        'dispatch\router_no_match' => true,
+        // Render errors, triggered in case of a problem during the render process (no renderer found...).
         'render' => true,
         // Fatal errors that halt execution of further code
         'fatal' => true,
+    ),
+    /**
+     * filter out some of the exception types (i.e. \Exception\UnauthorizedException)
+     */
+    'exception_filter' => array(
+        '\Exception\UnauthorizedException' // 403
     ),
 
    /**
@@ -95,7 +103,7 @@ $config = array(
      * Zend\Db\Adapter\Adapter DI Alias
      *
      * Please specify the DI alias for the configured Zend\Db\Adapter\Adapter
-     * instance that DhErrorLogging should use. Applicable only if you want to log into database.
+     * instance that DhErrorLogging should use. Applicable only if you want to log into database via Zend Db.
      */
      //'zend_db_adapter' => 'Zend\Db\Adapter\Adapter',
 
