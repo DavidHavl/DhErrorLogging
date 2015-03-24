@@ -67,7 +67,7 @@ You can easily re-enable this functionality if you use your own logger implement
 ## Contributing
 
 Want to make it better or more polished? Feel free to send pull request. I am always happy to collaborate with others or listen to a feedback. 
-
+Don't know where to start? How about help with writing tests.
 
 ## TODO:
 - Tests. Yes it is boring to code, but necessary.
