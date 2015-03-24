@@ -4,21 +4,22 @@ ZF2 application error logging
 Full featured Error logging module for ZF2 application
 
 It is able to log framework specific exceptions, php errors and even fatal errors or parse errors.
-Each log record also has an error reference number that users see on error page (error or fatal) which helps to identify the problem when reporting it back to you.
+Each log record also has an error reference number that users can see on error page which helps to identify the problem when reporting it back to you.
 The module also adds several useful info to the final log such as IP, request, url called, session id, backtrace,...
-It also acompanies console (in basic use cases)
+The module sends output depending on content-type requested or interface used (html, json, console). 
+
 ## Installation
 
 - Add ```"davidhavl/dherrorlogging": "~2.0"``` to the require section of your composer.json
 - Add ```'DhErrorLogging'``` to the modules array in your application.config.php before any other module (or as close to the top as possible).
 - If you have a ./config/autoload/ directory set up for your project, you can drop the dherrorlogging.global.php.dist (rename it to dherrorlogging.global.php) config file from config directory in it and change the values as you wish.
 - Enable at least one logger (in the dherrorlogging.global.php "log_writers" section).
-- To display an Error Reference in your exception template (error/404, error/index) make sure you echo the error reference variable <?php echo $this->errorReference; ?>
+- To display an Error Reference in your own exception template (error/404, error/index) make sure you echo the error reference variable <?php echo $this->errorReference; ?>
 
 ## Notes
 Via the dherrorlogging.global.php you can enable/disable the logging functionality completly or disable just some types of errors/exceptions.
-You can configure several other things such as template path for fatal errors or log writers.
-You can also overwrite the logger, processor or reference generator if you wish (and know what you are doing).
+You can configure several other things such as template path for  errors or log writers.
+You can also overwrite the logger, processor, reference generator or response sender if you wish (and know what you are doing).
 
 When adding new log writer you can either add new config array for some of the the standard ZF2 writers that don't need injection of other objects (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
 or identifier of your own registered log writer factory (registered in main config section ['log_writers']) to the '['dherrorlogging']['log_writers']' section.
@@ -51,10 +52,11 @@ In order for the error page to return http status code 500 you should have PHP d
 
 ## Migration from v1 to v2
 Version 2 is in large respect a complete rewrite.
-The following has been added: 
+The following has also been added: 
 - error type enable/disable,
 - exception filter,
 - module options,
+- response sender (ability to send different response depending on where it come from or what request accept headers are)
 
 
 In matter of settings, the following has been deprecated:

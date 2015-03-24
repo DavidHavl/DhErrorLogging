@@ -2,8 +2,10 @@
 
 namespace DhErrorLogging;
 
+use Zend\Console\Console;
 use Zend\Mvc\MvcEvent;
 use Zend\Mvc\Application;
+use Zend\Mvc\ResponseSender\SendResponseEvent;
 use Zend\EventManager\EventInterface;
 use Zend\Log\Logger;
 use Zend\Db\Adapter;
@@ -19,7 +21,8 @@ class Module implements
     private $logger;
     private $generator;
     private $exceptionFilter;
-    private $ptions;
+    private $options;
+    private $nonMvcResponseSender;
 
     public function getConfig()
     {
@@ -58,10 +61,10 @@ class Module implements
         $this->logger = $serviceManager->get('DhErrorLogging\Logger');
         $this->generator = $serviceManager->get('DhErrorLogging\Generator\ErrorReferenceGenerator');
         $this->exceptionFilter = $serviceManager->get('DhErrorLogging\Filter\ExceptionFilter');
-
+        $this->nonMvcResponseSender = $serviceManager->get('DhErrorLogging\Sender\ResponseSender');
 
         // Handle native PHP errors
-        if ($options->isErrortypeEnabled('native')) {
+        if ($options->isErrortypeEnabled('errors')) {
             $this->attachErrorHandler();
         }
 
@@ -92,11 +95,12 @@ class Module implements
         set_error_handler(function ($level, $message, $file, $line) {
             $minErrorLevel = error_reporting();
             if ($minErrorLevel & $level) {
+                $errorReference = $this->generator->generate();
                 $extra = array(
                     'type'  => 'ERROR',
                     'file'  => $file,
                     'line'  => $line,
-                    'reference' => $this->generator->generate()
+                    'reference' => $errorReference
                 );
                 // translate error type to log type.
                 $logType = Logger::ERR;
@@ -106,11 +110,16 @@ class Module implements
 
                 // log it
                 $this->logger->log($logType, $message, $extra);
-echo "IN ERROR. DH!!";
-var_dump($message);die();// TODO: remove me
+
+                $responseEvent = new SendResponseEvent();
+                $responseEvent->setParams(
+                    array_merge($extra, array('message' => $message))
+                );
+                $this->nonMvcResponseSender->send($responseEvent);
+                // return false to not continue native handler
+                return false;
             }
-            // return false to not continue native handler
-            return false;
+
         });
 
     }
@@ -123,17 +132,24 @@ var_dump($message);die();// TODO: remove me
 
             do {
                 $priority = Logger::ERR;
-                // TODO: implement $exceptionFilter instead of the bellow?
+
                 if ($exception instanceof \ErrorException && isset(Logger::$errorPriorityMap[$exception->getSeverity()])) {
                     $priority = Logger::$errorPriorityMap[$exception->getSeverity()];
                 }
 
+                // log only desired exceptions
+                if (!empty($exception) && !$this->exceptionFilter->isAllowed($exception)) {
+                    return;
+                }
+
+
+                $errorReference = $this->generator->generate();
                 $extra = array(
                     'type'  => 'EXCEPTION',
                     'file'  => $exception->getFile(),
                     'line'  => $exception->getLine(),
                     'trace' => $exception->getTrace(),
-                    'reference' => $this->generator->generate()
+                    'reference' => $errorReference
                 );
                 if (isset($exception->xdebug_message)) {
                     $extra['xdebug'] = $exception->xdebug_message;
@@ -151,12 +167,13 @@ var_dump($message);die();// TODO: remove me
             foreach (array_reverse($logs) as $log) {
                 $this->logger->log($log['priority'], $log['message'], $log['extra']);
             }
-echo "IN EXCEPTION. DH!!";
-var_dump($logs);die(); // TODO: remove me
 
+            $params = $logs[0]['extra'];
+            $params['message'] = $logs[0]['message'];
 
-            // TODO: do we need to show the error view template? Via ViewModel?
-
+            $responseEvent = new SendResponseEvent();
+            $responseEvent->setParams($params);
+            $this->nonMvcResponseSender->send($responseEvent);
             // return false to not continue other handlers
             return false;
         });
@@ -170,8 +187,6 @@ var_dump($logs);die(); // TODO: remove me
         if (!$event->isError()) {
             return;
         }
-
-        // TODO: test if when we disable both the error handler still shows in the nice template.
 
         $errorType = E_ERROR;
         // get message and exception (if present)
@@ -195,20 +210,20 @@ var_dump($logs);die(); // TODO: remove me
 
         // generate unique reference for this error
         $errorReference = $this->generator->generate();
-        $extras = array(
+        $extra = array(
             'reference' => $errorReference,
             'type'  => $type
         );
         // check if event has exception and populate extras array.
         if (!empty($exception)) {
             $message = $exception->getMessage();
-            $extras['file'] = $exception->getFile();
-            $extras['line'] = $exception->getLine();
-            $extras['trace'] = $exception->getTrace();
+            $extra['file'] = $exception->getFile();
+            $extra['line'] = $exception->getLine();
+            $extra['trace'] = $exception->getTrace();
 
-            // check if xdebug is enabled and message present in which case add it to the extras
+            // check if xdebug is enabled and message present in which case add it to the extra
             if (isset($exception->xdebug_message)) {
-                $extras['xdebug'] = $exception->xdebug_message;
+                $extra['xdebug'] = $exception->xdebug_message;
             }
 
             if (method_exists($exception, 'getSeverity')) {
@@ -223,19 +238,21 @@ var_dump($logs);die(); // TODO: remove me
         }
 
         // log it
-        $this->logger->log($logType, $message, $extras);
+        $this->logger->log($logType, $message, $extra);
 
-        // hijack error view and add error reference to the message
+        // hijack error view and add error reference variable to the view
         $viewModel = $event->getResult();
-
         if ($viewModel instanceof ModelInterface) {
-            $originalMessage = $viewModel->getVariable('message');
-            $viewModel->setVariable('message', $originalMessage . '<br /> Error Reference: ' . $errorReference);
-            // TODO: instead of appending to message just add new variable:    $event->getResult()->setVariable('errorReference', $errorReference);
-            // TODO: in which case create a template with this variable or add instruction to README.md
-            // TODO: check ExceptionStrategy class
-            // TODO: but for console, have it still append because there is no view variable.
-            // TODO: if ($viewModel instanceof ConsoleModel) {$viewModel->} else {set var}
+            // if template specified, use it
+            if ($this->options->getTemplate('dispatch')) {
+                $mapresolver = $event->getApplication()->getServiceManager()->get('ViewTemplateMapResolver');
+                if (!$mapresolver->has('dherrorlogging/dispatch')) {
+                    $path = $this->options->getTemplate('dispatch');
+                    $mapresolver->add('dherrorlogging/dispatch', realpath($path));
+                }
+                $viewModel->setTemplate('dherrorlogging/dispatch');
+            }
+            $viewModel->setVariable('errorReference', $errorReference);
         }
 
     }
@@ -261,20 +278,20 @@ var_dump($logs);die(); // TODO: remove me
 
         // generate unique reference for this error
         $errorReference = $this->generator->generate();
-        $extras = array(
+        $extra = array(
             'reference' => $errorReference,
             'type'  => $type
         );
         // check if event has exception and populate extras array.
         if (!empty($exception)) {
             $message = $exception->getMessage();
-            $extras['file'] = $exception->getFile();
-            $extras['line'] = $exception->getLine();
-            $extras['trace'] = $exception->getTrace();
+            $extra['file'] = $exception->getFile();
+            $extra['line'] = $exception->getLine();
+            $extra['trace'] = $exception->getTrace();
 
-            // check if xdebug is enabled and message present in which case add it to the extras
+            // check if xdebug is enabled and message present in which case add it to the extra
             if (isset($exception->xdebug_message)) {
-                $extras['xdebug'] = $exception->xdebug_message;
+                $extra['xdebug'] = $exception->xdebug_message;
             }
 
             if (method_exists($exception, 'getSeverity')) {
@@ -289,21 +306,22 @@ var_dump($logs);die(); // TODO: remove me
         }
 
         // log it
-        $this->logger->log($logType, $message, $extras);
+        $this->logger->log($logType, $message, $extra);
 
-        // hijack error view and add error reference to the message
+        // hijack error view and add error reference variable to the view
         $viewModel = $event->getResult();
-
         if ($viewModel instanceof ModelInterface) {
-            $originalMessage = $viewModel->getVariable('message');
-            $viewModel->setVariable('message', $originalMessage . '<br /> Error Reference: ' . $errorReference);
-            // TODO: instead of appending to message just add new variable:    $event->getResult()->setVariable('errorReference', $errorReference);
-            // TODO: in which case create a template with this variable or add instruction to README.md
-            // TODO: check ExceptionStrategy class
-            // TODO: but for console, have it still append because there is no view variable.
-            // TODO: if ($viewModel instanceof ConsoleModel) {$viewModel->} else {set var}
+            // if template specified, use it
+            if ($this->options->getTemplate('render')) {
+                $mapresolver = $event->getApplication()->getServiceManager()->get('ViewTemplateMapResolver');
+                if (!$mapresolver->has('dherrorlogging/render')) { // if not specified, assign it from config
+                    $path = $this->options->getTemplate('render');
+                    $mapresolver->add('dherrorlogging/render', realpath($path));
+                }
+                $viewModel->setTemplate('dherrorlogging/render');
+            }
+            $viewModel->setVariable('errorReference', $errorReference);
         }
-
     }
 
     public function attachFatalErrorHandler()
@@ -320,14 +338,9 @@ var_dump($logs);die(); // TODO: remove me
                 return;
             }
 
-            // clean any previous output from buffer
-            while (ob_get_level() > 0) {
-                ob_end_clean();
-            }
-
             $errorReference = $this->generator->generate();
 
-            $extras = array(
+            $extra = array(
                 'type'  => 'FATAL',
                 'reference' => $errorReference,
                 'file'      => $error['file'],
@@ -340,25 +353,18 @@ var_dump($logs);die(); // TODO: remove me
                 $logType = Logger::$errorPriorityMap[$error['type']];
             }
             // log error using logger
-            $this->logger->log($logType, $error['message'], $extras);
+            $this->logger->log($logType, $error['message'], $extra);
 
-            // get absolute path of the template to render (the shutdown method sometimes changes relative path).
-            $fatalTemplatePath = dirname(__FILE__) . '/view/error/fatal.html';
-            if (!empty($this->config['dherrorlogging']['templates']['fatal'])
-                && file_exists($this->config['dherrorlogging']['templates']['fatal'])
-            ) {
-
-                $fatalTemplatePath = $this->config['dherrorlogging']['templates']['fatal'];
-            }
-            // read content of file
-            $body = file_get_contents($fatalTemplatePath);
-            // inject error reference
-            $body = str_replace('%__ERROR_REFERENCE__%', 'Error Reference: ' . $errorReference, $body);
-            echo $body;
-            exit();
-// TODO: first finish native / exceptions, then the accept for fatals...
-            //$viewRender = $this->getServiceLocator()->get('ViewRenderer');
-            //$html = $viewRender->render($viewModel);
+            $responseEvent = new SendResponseEvent();
+            $responseEvent->setParams(
+                array_merge($extra, array('message' => $error['message']))
+            );
+            $this->nonMvcResponseSender->send($responseEvent);
         });
+
+
+
     }
+
+
 }

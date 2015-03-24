@@ -10,8 +10,8 @@ return array(
         'error_types' => array(
             // Exceptions (those other than within dispatch or render phase)
             'exceptions' => true,
-            // Native PHP errors
-            'native' => true,
+            // Native PHP errors (those other than within dispatch or render phase)
+            'errors' => true,
             // Dispatch errors, triggered in case of a problem or exception anywhere during dispatch process (unknown controller, exception thrown inside of controller,...)
             'dispatch' => true,
             // Router no match  (route not found = 404).
@@ -62,9 +62,15 @@ return array(
 
         ),
 
-        
+        // Paths of templates to be used for output
         'templates' => array(
+            'dispatch' => __DIR__ . '/../view/error/dispatch.phtml',
+            'render' => __DIR__ . '/../view/error/render.phtml',
+            'exception' => __DIR__ . '/../view/error/exception.html',
+            'error' => __DIR__ . '/../view/error/error.html',
             'fatal' => __DIR__ . '/../view/error/fatal.html',
+            'console' => __DIR__ . '/../view/error/console.txt',
+            'json' => __DIR__ . '/../view/error/json.js',
         )
     ),
 
@@ -90,7 +96,8 @@ return array(
             'DhErrorLogging\Logger' => 'DhErrorLogging\Logger\Factory\LoggerFactory',
             'DhErrorLogging\Filter\ExceptionFilter' => 'DhErrorLogging\Filter\Factory\ExceptionFilterFactory',
             'DhErrorLogging\Generator\ErrorReferenceGenerator' => 'DhErrorLogging\Generator\Factory\ErrorReferenceGeneratorFactory',
-            'DhErrorLogging\Options\ModuleOptions' => 'DhErrorLogging\Options\Factory\ModuleOptionsFactory'
+            'DhErrorLogging\Options\ModuleOptions' => 'DhErrorLogging\Options\Factory\ModuleOptionsFactory',
+            'DhErrorLogging\Sender\ResponseSender' => 'DhErrorLogging\Sender\Factory\ResponseSenderFactory'
         ),
 
 

@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * @copyright  Copyright 2009-2015 Davidhavl.com
+ * @license    MIT , http://davidhavl.com/license/MIT
+ * @author     davidhavl
+ */
 
 namespace DhErrorLogging\Processor;
 
