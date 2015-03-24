@@ -3,8 +3,8 @@ ZF2 application error logging
 
 Full featured Error logging module for ZF2 application
 
-It is able to log framework specific exceptions, php errors and even fatal errors or parse errors.
-Each log record also has an error reference number that users can see on error page which helps to identify the problem when reporting it back to you.
+It is able to log framework specific exceptions (while in dispatch or render lifecycle), exception, php errors and even fatal errors or parse errors (while outside of dispatch or render lifecycle).
+Each log record has an error reference number that users can see on error page which helps to identify the problem when reporting it back to you.
 The module also adds several useful info to the final log such as IP, request, url called, session id, backtrace,...
 The module sends output depending on content-type requested or interface used (html, json, console). 
 
@@ -17,8 +17,8 @@ The module sends output depending on content-type requested or interface used (h
 - To display an Error Reference in your own exception template (error/404, error/index) make sure you echo the error reference variable <?php echo $this->errorReference; ?>
 
 ## Notes
-Via the dherrorlogging.global.php you can enable/disable the logging functionality completly or disable just some types of errors/exceptions.
-You can configure several other things such as template path for  errors or log writers.
+Via the dherrorlogging.global.php you can enable/disable the logging functionality completely or disable just some types of errors/exceptions.
+You can configure several other things such as template path for errors or log writers.
 You can also overwrite the logger, processor, reference generator or response sender if you wish (and know what you are doing).
 
 When adding new log writer you can either add new config array for some of the the standard ZF2 writers that don't need injection of other objects (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
@@ -62,3 +62,12 @@ The following has also been added:
 In matter of settings, the following has been deprecated:
 ['dherrorlogging']['priority']
 You can easily re-enable this functionality if you use your own logger implementation.
+
+
+## Contributing
+
+Want to make it better or more polished? Feel free to send pull request. I am always happy to collaborate with others or listen to a feedback. 
+
+
+## TODO:
+- Tests. Yes it is boring to code, but necessary.
