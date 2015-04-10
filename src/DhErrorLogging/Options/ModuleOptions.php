@@ -153,4 +153,9 @@ class ModuleOptions extends AbstractOptions
         return null;
     }
 
+
+    public function setPriority($value) {
+        // this is here just for BC and has no effect
+    }
+
 }
