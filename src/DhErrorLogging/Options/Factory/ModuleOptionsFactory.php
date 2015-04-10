@@ -17,7 +17,7 @@ class ModuleOptionsFactory implements FactoryInterface
      * @return ModuleOptions
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
-    {
-        return new ModuleOptions($serviceLocator->get('config')['dherrorlogging']);
+    {   $config = $serviceLocator->get('config');
+        return new ModuleOptions($config['dherrorlogging']);
     }
 }
