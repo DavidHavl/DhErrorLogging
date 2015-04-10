@@ -10,7 +10,6 @@ use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\Log\Writer;
 use Zend\Log\Filter;
-use Zend\Log\Logger;
 
 class DbWriterFactory implements FactoryInterface
 {
@@ -30,9 +29,6 @@ class DbWriterFactory implements FactoryInterface
 
         // get zend db adapter
         $dbAdapter = $sl->get('dherrorlogging_zend_db_adapter');
-
-        // get logger db config
-        $config = $sl->get('config')['dherrorlogging'];
 
         // set db table name where logs will be recorded to
         $dbTableName = 'error_log';
@@ -62,7 +58,7 @@ class DbWriterFactory implements FactoryInterface
         // check if there is a setting that overwrites the default table map
         if (!empty($this->options['table_map'])) {
             $mapTemp = $this->options['table_map'];
-            //check firstlevel fields and convert rest as extras
+            //check first level fields and convert rest as extras
             $mainFields = array('timestamp','priority','priorityName','message');
             foreach ($mapTemp as $key=>$value) {
                 if (!in_array($key, $mainFields)) {
