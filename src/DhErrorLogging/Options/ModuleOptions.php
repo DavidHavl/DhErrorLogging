@@ -153,7 +153,10 @@ class ModuleOptions extends AbstractOptions
         return null;
     }
 
-
+    /**
+     * This is here just for BC and has no effect
+     * @param mixed $value
+     */
     public function setPriority($value) {
         // this is here just for BC and has no effect
     }
