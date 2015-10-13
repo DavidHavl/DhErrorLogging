@@ -25,6 +25,9 @@ return array(
         'exception_filter' => array(
             '\Exception\UnauthorizedException' // 403
         ),
+        // Levels of errors which shows error message in above templates
+        'view_priority' => E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT,
+
         // set writers to be used.
         // You can either add new config array for some of the the standard writers that don't need injection of other objects (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
         // or identifier of registered log writer factory (registered in config section ['log_writers']).

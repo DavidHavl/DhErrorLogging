@@ -43,8 +43,10 @@ class ModuleOptions extends AbstractOptions
      */
     protected $templates;
 
-
-
+    /**
+     * @var int
+     */
+    protected $viewpriority = E_ALL;
 
     /**
      * @return boolean
@@ -161,4 +163,15 @@ class ModuleOptions extends AbstractOptions
         // this is here just for BC and has no effect
     }
 
+    /**
+     * Get level of errors in whitch nice view is presented
+     * @return int
+     */
+    public function getViewPriority() {
+        return $this->viewpriority;
+    }
+
+    public function setViewPriority($value) {
+        $this->viewpriority = (int)$value;
+    }
 }
