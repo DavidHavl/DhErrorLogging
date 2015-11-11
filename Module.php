@@ -235,7 +235,7 @@ class Module implements
         // log it
         $this->logger->log($logType, $message, $extra);
 
-        $this->mvcResponse('dispatch', $event);
+        $this->mvcResponse('dispatch', $event, $extra);
     }
 
     public function attachRenderErrorHandler($event)
@@ -289,7 +289,7 @@ class Module implements
         // log it
         $this->logger->log($logType, $message, $extra);
 
-        $this->mvcResponse('render', $event);
+        $this->mvcResponse('render', $event, $extra);
     }
 
     public function attachFatalErrorHandler()
@@ -344,7 +344,7 @@ class Module implements
         $this->nonMvcResponseSender->send($responseEvent);
     }
 
-    private function mvcResponse($name, $event) {
+    private function mvcResponse($name, $event, $extra = []) {
         // hijack error view and add error reference variable to the view
         $viewModel = $event->getResult();
         if ($viewModel instanceof ModelInterface) {
@@ -357,7 +357,9 @@ class Module implements
                 }
                 $viewModel->setTemplate('dherrorlogging/'.$name);
             }
-            $viewModel->setVariable('errorReference', $errorReference);
+            if (isset($extra['reference'])) {
+                $viewModel->setVariable('errorReference', $extra['reference']);
+            }
         }
     }
 }
