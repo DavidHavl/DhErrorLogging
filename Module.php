@@ -111,7 +111,7 @@ class Module implements
                 // log it
                 $this->logger->log($logType, $message, $extra);
 
-                if ($this->options->getViewPriority() & $level) {
+                if ($this->options->getDisplayableErrorLevels() & $level) {
                     $this->nonMvcResponse($extra, $message);
                     // return false to not continue native handler
                     return false;

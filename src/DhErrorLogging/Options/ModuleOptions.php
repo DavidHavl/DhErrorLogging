@@ -46,7 +46,7 @@ class ModuleOptions extends AbstractOptions
     /**
      * @var int
      */
-    protected $viewpriority = E_ALL;
+    protected $displayableerrorlevels = E_ALL;
 
     /**
      * @return boolean
@@ -167,11 +167,11 @@ class ModuleOptions extends AbstractOptions
      * Get level of errors in whitch nice view is presented
      * @return int
      */
-    public function getViewPriority() {
-        return $this->viewpriority;
+    public function getDisplayableErrorLevels() {
+        return $this->displayableerrorlevels;
     }
 
-    public function setViewPriority($value) {
-        $this->viewpriority = (int)$value;
+    public function setDisplayableErrorLevels($value) {
+        $this->displayableerrorlevels = (int)$value;
     }
 }
