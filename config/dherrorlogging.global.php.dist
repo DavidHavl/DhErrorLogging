@@ -38,6 +38,11 @@ $config = array(
         '\Exception\UnauthorizedException' // 403
     ),
 
+    /**
+     * Levels of errors which shows error message in templates defined in "templates" section
+     */
+    'displayable_error_levels' => E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT,
+
    /**
     * Set writers to be used.
     * You can either add new config array for some of the the standard writers that don't need injection of other objects
