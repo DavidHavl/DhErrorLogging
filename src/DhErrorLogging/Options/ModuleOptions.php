@@ -43,8 +43,10 @@ class ModuleOptions extends AbstractOptions
      */
     protected $templates;
 
-
-
+    /**
+     * @var int
+     */
+    protected $displayableerrorlevels = E_ALL;
 
     /**
      * @return boolean
@@ -161,4 +163,15 @@ class ModuleOptions extends AbstractOptions
         // this is here just for BC and has no effect
     }
 
+    /**
+     * Get level of errors in whitch nice view is presented
+     * @return int
+     */
+    public function getDisplayableErrorLevels() {
+        return $this->displayableerrorlevels;
+    }
+
+    public function setDisplayableErrorLevels($value) {
+        $this->displayableerrorlevels = (int)$value;
+    }
 }

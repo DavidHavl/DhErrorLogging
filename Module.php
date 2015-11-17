@@ -111,17 +111,14 @@ class Module implements
                 // log it
                 $this->logger->log($logType, $message, $extra);
 
-                $responseEvent = new SendResponseEvent();
-                $responseEvent->setParams(
-                    array_merge($extra, array('message' => $message))
-                );
-                $this->nonMvcResponseSender->send($responseEvent);
-                // return false to not continue native handler
-                return false;
+                if ($this->options->getDisplayableErrorLevels() & $level) {
+                    $this->nonMvcResponse($extra, $message);
+                    // return false to not continue native handler
+                    return false;
+                }
+                return true;
             }
-
         });
-
     }
 
 
@@ -171,9 +168,7 @@ class Module implements
             $params = $logs[0]['extra'];
             $params['message'] = $logs[0]['message'];
 
-            $responseEvent = new SendResponseEvent();
-            $responseEvent->setParams($params);
-            $this->nonMvcResponseSender->send($responseEvent);
+            $this->nonMvcResponse($params);
             // return false to not continue other handlers
             return false;
         });
@@ -240,21 +235,7 @@ class Module implements
         // log it
         $this->logger->log($logType, $message, $extra);
 
-        // hijack error view and add error reference variable to the view
-        $viewModel = $event->getResult();
-        if ($viewModel instanceof ModelInterface) {
-            // if template specified, use it
-            if ($this->options->getTemplate('dispatch')) {
-                $mapresolver = $event->getApplication()->getServiceManager()->get('ViewTemplateMapResolver');
-                if (!$mapresolver->has('dherrorlogging/dispatch')) {
-                    $path = $this->options->getTemplate('dispatch');
-                    $mapresolver->add('dherrorlogging/dispatch', realpath($path));
-                }
-                $viewModel->setTemplate('dherrorlogging/dispatch');
-            }
-            $viewModel->setVariable('errorReference', $errorReference);
-        }
-
+        $this->mvcResponse('dispatch', $event, $extra);
     }
 
     public function attachRenderErrorHandler($event)
@@ -308,20 +289,7 @@ class Module implements
         // log it
         $this->logger->log($logType, $message, $extra);
 
-        // hijack error view and add error reference variable to the view
-        $viewModel = $event->getResult();
-        if ($viewModel instanceof ModelInterface) {
-            // if template specified, use it
-            if ($this->options->getTemplate('render')) {
-                $mapresolver = $event->getApplication()->getServiceManager()->get('ViewTemplateMapResolver');
-                if (!$mapresolver->has('dherrorlogging/render')) { // if not specified, assign it from config
-                    $path = $this->options->getTemplate('render');
-                    $mapresolver->add('dherrorlogging/render', realpath($path));
-                }
-                $viewModel->setTemplate('dherrorlogging/render');
-            }
-            $viewModel->setVariable('errorReference', $errorReference);
-        }
+        $this->mvcResponse('render', $event, $extra);
     }
 
     public function attachFatalErrorHandler()
@@ -352,19 +320,46 @@ class Module implements
             if (isset(Logger::$errorPriorityMap[$error['type']])) {
                 $logType = Logger::$errorPriorityMap[$error['type']];
             }
-            // log error using logger
-            $this->logger->log($logType, $error['message'], $extra);
 
-            $responseEvent = new SendResponseEvent();
-            $responseEvent->setParams(
-                array_merge($extra, array('message' => $error['message']))
-            );
-            $this->nonMvcResponseSender->send($responseEvent);
-        });
+            try {
+                // log error using logger
+                $this->logger->log($logType, $error['message'], $extra);
+            }
+            catch (\Exception $e) {
+                // if fatal error occured it could be a log writer problem
+                // so write it to PHP log file nad show a nice error message
+                error_log(sprintf('[Error reference: %s] %s', $errorReference, $error['message']), 0);
+            }
 
-
-
+            $this->nonMvcResponse($extra, $error['message']);
+       });
     }
 
+    private function nonMvcResponse($extra, $message = '') {
+        $responseEvent = new SendResponseEvent();
+        if (!empty($message)) {
+            $extra = array_merge($extra, array('message' => $message));
+        }
+        $responseEvent->setParams($extra);
+        $this->nonMvcResponseSender->send($responseEvent);
+    }
 
+    private function mvcResponse($name, $event, $extra = []) {
+        // hijack error view and add error reference variable to the view
+        $viewModel = $event->getResult();
+        if ($viewModel instanceof ModelInterface) {
+            // if template specified, use it
+            if ($this->options->getTemplate($name)) {
+                $mapresolver = $event->getApplication()->getServiceManager()->get('ViewTemplateMapResolver');
+                if (!$mapresolver->has('dherrorlogging/'.$name)) { // if not specified, assign it from config
+                    $path = $this->options->getTemplate($name);
+                    $mapresolver->add('dherrorlogging/'.$name, realpath($path));
+                }
+                $viewModel->setTemplate('dherrorlogging/'.$name);
+            }
+            if (isset($extra['reference'])) {
+                $viewModel->setVariable('errorReference', $extra['reference']);
+            }
+        }
+    }
 }
