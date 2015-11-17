@@ -25,7 +25,7 @@ return array(
         'exception_filter' => array(
             '\Exception\UnauthorizedException' // 403
         ),
-        // Levels of errors which shows error message in above templates
+        // Levels of errors which will show the nice error view defined in template under [templates][error] section
         'displayable_error_levels' => E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT,
 
         // set writers to be used.

@@ -39,7 +39,7 @@ $config = array(
     ),
 
     /**
-     * Levels of errors which shows error message in templates defined in "templates" section
+     * Levels of errors which will show the nice error view defined in template under [templates][error] section
      */
     'displayable_error_levels' => E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT,
 
