@@ -6,10 +6,10 @@
  */
 namespace DhErrorLogging\Writer\Factory;
 
+use Interop\Container\ContainerInterface;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\Log\Writer;
-use Zend\Log\Filter;
 
 class DbWriterFactory implements FactoryInterface
 {
@@ -19,16 +19,16 @@ class DbWriterFactory implements FactoryInterface
     {
         $this->options = $options;
     }
+
     /**
      * {@inheritDoc}
+     *
+     * @return Writer\Db
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $name, array $options = null)
     {
-        // grab the service locator
-        $sl = $serviceLocator->getServiceLocator();
-
         // get zend db adapter
-        $dbAdapter = $sl->get('dherrorlogging_zend_db_adapter');
+        $dbAdapter = $container->get('dherrorlogging_zend_db_adapter');
 
         // set db table name where logs will be recorded to
         $dbTableName = 'error_log';
@@ -76,5 +76,20 @@ class DbWriterFactory implements FactoryInterface
         $dbWriter = new Writer\Db($dbAdapter, $dbTableName, $map);
 
         return $dbWriter;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * For use with zend-servicemanager v2; proxies to __invoke().
+     */
+    public function createService(ServiceLocatorInterface $container)
+    {
+        // Retrieve the parent container when under zend-servicemanager v2
+        if (method_exists($container, 'getServiceLocator')) {
+            $container = $container->getServiceLocator() ?: $container;
+        }
+
+        return $this($container, Writer\Db::class);
     }
 }
