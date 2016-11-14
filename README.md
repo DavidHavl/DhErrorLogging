@@ -1,5 +1,9 @@
+
 ZF2 application error logging
 =============================
+
+[![Latest Version](https://img.shields.io/github/release/DavidHavl/DhErrorLogging.svg?style=flat-square)](https://github.com/DavidHavl/DhErrorLogging/releases)
+[![Downloads](https://img.shields.io/packagist/dt/davidhavl/dherrorlogging.svg?style=flat-square)](https://packagist.org/packages/davidhavl/dherrorlogging)
 
 Full featured Error logging module for ZF2 application
 
