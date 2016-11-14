@@ -70,12 +70,7 @@ class LoggerFactory implements FactoryInterface
 
         // Logger needs at least one writer. Check if there are any, else add empty one.
         if ($logger->getWriters()->count() == 0) {
-            // Support for PHP7 / Zend >= 2.4
-            if (class_exists('\Zend\Log\Writer\Noop')) {
-                $logger->addWriter(new Writer\Noop());
-            } else {
-                $logger->addWriter(new Writer\Null());
-            }
+            $logger->addWriter(new Writer\Noop());
         }
 
         return $logger;
