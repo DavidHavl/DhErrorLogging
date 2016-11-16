@@ -5,9 +5,8 @@
  * If you have a ./config/autoload/ directory set up for your project, you can
  * drop this config file in it and change the values as you wish.
  */
-use Zend\Log\Logger;
 
-$config = array(
+$config = [
 
     /**
      * Set if error logging should be enabled.
@@ -17,7 +16,7 @@ $config = array(
     /**
      * Set what error types should be logged
      */
-    'error_types' => array(
+    'error_types' => [
         // Exceptions (those other than within dispatch or render phase)
         'exceptions' => true,
         // Native PHP errors (those other than within dispatch or render phase)
@@ -30,13 +29,13 @@ $config = array(
         'render' => true,
         // Fatal errors that halt execution of further code
         'fatal' => true,
-    ),
+    ],
     /**
      * filter out some of the exception types (i.e. \Exception\UnauthorizedException)
      */
-    'exception_filter' => array(
+    'exception_filter' => [
         '\Exception\UnauthorizedException' // 403
-    ),
+    ],
 
     /**
      * Levels of errors which will show the nice error view defined in template under [templates][error] section
@@ -49,28 +48,27 @@ $config = array(
     * (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
     * or identifier of registered log writer factory (registered in general config section ['log_writers']).
     */
-    'log_writers' => array(
+    'log_writers' => [
 
         /**
          * Writing logs into file
          *
          * Make sure the specified file exists and it is writable
          */
-        //'stream' => array( // writing logs to file
+        'stream' => [
         //    'name' => 'stream',
-        //    'options' => array(
+        //    'options' => [
         //        'stream' => 'data/log/error.log', // make sure you create this file and it is writable.
         //        'log_separator' => "\n"
-        //    ),
-        //
-        //),
+        //    ],
+        ],
 
         /**
          * Recording logs into database
          *
          * Make sure and have table "error_log" with correct schema in your database
          */
-         'db' => array(
+         'db' => [
 //           'name' => 'DhErrorLogging\DbWriter',
 //           'options' => array(
 //               'table_name' => 'error_log',
@@ -90,9 +88,58 @@ $config = array(
 //                   'session_id' => 'session_id'
 //                )
 //             )
-            )
+            ],
 
-    ),
+        /**
+         * Reporting logs via email
+         */
+        'mail' => [
+//            'name' => 'mail',
+//            'options' => [
+//                /*
+//                 * Subject Prepend Text
+//                 */
+//                'subject_prepend_text' => 'Error Log',
+//                /*
+//                 * Mail Options
+//                 * @see Zend\Mail\Message
+//                 */
+//                'mail' => [
+//                    'from' => 'app@foo.com',
+//                    'to' => 'log@bar.com',
+//                ],
+//                /*
+//                 * Transport
+//                 *       - sendmail  => Zend\Mail\Transport\Sendmail,
+//                 *       - smtp      => Zend\Mail\Transport\Smtp,
+//                 *
+//                 * Default transport is smtp
+//                 */
+//                'transport' => [
+//                    'type' => 'smtp',
+//
+//                    /*
+//                     * Transport Options
+//                     * @see Zend\Mail\Transport\SmtpOptions
+//                     */
+//                    'options' => [
+//                        'host' => 'smtp.foo.com',
+//                        'connection_class' => 'login',
+//                        'connection_config' => [
+//                            'username' => 'bar@foo.com',
+//                            'smtp_password' => '123456',
+//                            'ssl' => 'tls',
+//                            'port' => 587
+//                        ]
+//                    ],
+//                ]
+//            ]
+        ]
+        /*
+         * Your own log writer here
+         */
+
+    ],
 
     /**
      * Paths of templates to be used for output of errors
@@ -124,16 +171,16 @@ $config = array(
      */
      //'zend_db_adapter' => 'Zend\Db\Adapter\Adapter',
 
-);
+];
 
 
-return array(
+return [
     'dherrorlogging' => $config,
 
-    'service_manager' => array(
-        'aliases' => array(
+    'service_manager' => [
+        'aliases' => [
             // set db adapter
             'dherrorlogging_zend_db_adapter' => (isset($config['zend_db_adapter'])) ? $config['zend_db_adapter']: 'Zend\Db\Adapter\Adapter',
-        ),
-    ),
-);
+        ],
+    ]
+];
