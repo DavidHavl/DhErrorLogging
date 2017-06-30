@@ -2,8 +2,8 @@
 /**
  * Error reference generator interface.
  *
- * @license http://davidhavl.com/license/MIT
- * @link http://davidhavl.com
+ * @license http://DavidHavl.com/license/MIT
+ * @link http://DavidHavl.com
  * @author: davidhavl
  */
 

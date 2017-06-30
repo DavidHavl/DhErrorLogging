@@ -1,7 +1,7 @@
 <?php
 /**
- * @copyright  Copyright 2009-2015 Davidhavl.com
- * @license    MIT , http://davidhavl.com/license/MIT
+ * @copyright  Copyright  DavidHavl.com
+ * @license    MIT , http://DavidHavl.com/license/MIT
  * @author     davidhavl
  */
 namespace DhErrorLogging\Logger\Factory;
@@ -47,7 +47,7 @@ class LoggerFactory implements FactoryInterface
                     continue;
                 }
                 // get options
-                $options = array();
+                $options = [];
                 if (!empty($writerSpecs['options']) && is_array($writerSpecs['options'])) {
                     $options = $writerSpecs['options'];
                 }

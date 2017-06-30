@@ -68,11 +68,11 @@ $config = [
          *
          * Make sure and have table "error_log" with correct schema in your database
          */
-         'db' => [
+//         'db' => [
 //           'name' => 'DhErrorLogging\DbWriter',
-//           'options' => array(
+//           'options' => [
 //               'table_name' => 'error_log',
-//               'table_map' => array(
+//               'table_map' => [
 //                   'timestamp' => 'creation_time',
 //                   'type' => 'type',
 //                   'priorityName' => 'priority',
@@ -86,9 +86,21 @@ $config = [
 //                   'request' => 'request',
 //                   'ip' => 'ip',
 //                   'session_id' => 'session_id'
-//                )
-//             )
-            ],
+//                ]
+//             ]
+//         ],
+
+        /**
+         * Recording logs into database via doctrine
+         *
+         * Make sure you run doctrine update command to create
+         * for example via doctrine module:
+         * "php ./vendor/doctrine/doctrine-module/bin/doctrine-module orm:schema-tool:update --force"
+         */
+//      'doctrine' => [
+//          'name' => 'DhErrorLogging\DoctrineWriter'
+//      ],
+
 
         /**
          * Reporting logs via email
@@ -145,7 +157,7 @@ $config = [
      * Paths of templates to be used for output of errors
      */
      /*
-    'templates' => array(
+    'templates' => [
          // error during dispatch lifecycle. comment out if you want to use the default zend skeleton one.
          'dispatch' => __DIR__ . '/../view/error/dispatch.phtml',
          // error during render lifecycle. comment out if you want to use the default zend skeleton one.
@@ -160,7 +172,7 @@ $config = [
          'console' => __DIR__ . '/../view/error/console.txt',
          // error output when json response requested
          'json' => __DIR__ . '/../view/error/json.js'
-    ),
+    ],
     */
 
     /**
@@ -179,8 +191,21 @@ return [
 
     'service_manager' => [
         'aliases' => [
-            // set db adapter
-            'dherrorlogging_zend_db_adapter' => (isset($config['zend_db_adapter'])) ? $config['zend_db_adapter']: 'Zend\Db\Adapter\Adapter',
+            /**
+             * Zend\Db\Adapter\Adapter DI Alias
+             *
+             * Please specify the DI alias for the configured Zend\Db\Adapter\Adapter instance
+             * that DhErrorLogging should use. Applicable only if you want to log into database via Zend Db.
+             */
+            // 'dherrorlogging_zend_db_adapter' => isset($config['zend_db_adapter']) ? $config['zend_db_adapter']: 'Zend\Db\Adapter\Adapter',
+
+            /**
+             * Doctrine entity manager DI Alias
+             *
+             * Please specify the DI alias for the configured doctrine entity manager
+             * that DhErrorLogging should use. Applicable only if you want to log into database via Doctrine.
+             */
+            // 'dherrorlogging_doctrine_entity_manager' => \Doctrine\ORM\EntityManager::class,
         ],
-    ]
+    ],
 ];

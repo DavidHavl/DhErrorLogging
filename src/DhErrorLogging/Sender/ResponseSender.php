@@ -2,10 +2,10 @@
 /**
  * Response Sender
  *
- * @author     David Havl <contact@davidhavl.com>
+ * @author     David Havl <contact@DavidHavl.com>
  * @copyright  Copyright 2004-2015 David Havl
- * @license    MIT , http://davidhavl.com/license/MIT
- * @link       http://davidhavl.com
+ * @license    MIT , http://DavidHavl.com/license/MIT
+ * @link       http://DavidHavl.com
  */
 
 namespace DhErrorLogging\Sender;

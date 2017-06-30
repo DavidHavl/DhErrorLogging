@@ -4,24 +4,32 @@
  * @license    MIT , http://DavidHavl.com/license/MIT
  * @author     davidhavl
  */
-namespace DhErrorLogging\Options\Factory;
+namespace DhErrorLogging\Writer\Factory;
 
 use Interop\Container\ContainerInterface;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
-use DhErrorLogging\Options\ModuleOptions;
+use DhErrorLogging\Writer\DoctrineWriter;
 
-class ModuleOptionsFactory implements FactoryInterface
+class DoctrineWriterFactory implements FactoryInterface
 {
+    protected $options = array();
+
+    public function __construct($options = array())
+    {
+        $this->options = $options;
+    }
+
     /**
      * {@inheritDoc}
      *
-     * @return ModuleOptions
+     * @return DoctrineWriter
      */
     public function __invoke(ContainerInterface $container, $name, array $options = null)
     {
-        $config = $container->get('config');
-        return new ModuleOptions($config['dherrorlogging']);
+        // get entity manager
+        $em = $container->get('dherrorlogging_doctrine_entity_manager');
+        return new DoctrineWriter($em);
     }
 
     /**
@@ -36,6 +44,6 @@ class ModuleOptionsFactory implements FactoryInterface
             $container = $container->getServiceLocator() ?: $container;
         }
 
-        return $this($container, ModuleOptions::class);
+        return $this($container, DoctrineWriter::class);
     }
 }
