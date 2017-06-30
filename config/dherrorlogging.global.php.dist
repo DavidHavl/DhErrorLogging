@@ -93,8 +93,8 @@ $config = [
         /**
          * Recording logs into database via doctrine
          *
-         * Make sure you run doctrine update command to create
-         * for example via doctrine module:
+         * Make sure you run doctrine update command to create the database tables.
+         * For example via doctrine module:
          * "php ./vendor/doctrine/doctrine-module/bin/doctrine-module orm:schema-tool:update --force"
          */
 //      'doctrine' => [
@@ -205,7 +205,7 @@ return [
              * Please specify the DI alias for the configured doctrine entity manager
              * that DhErrorLogging should use. Applicable only if you want to log into database via Doctrine.
              */
-            // 'dherrorlogging_doctrine_entity_manager' => \Doctrine\ORM\EntityManager::class,
+            // 'dherrorlogging_doctrine_entity_manager' => 'doctrine.entitymanager.orm_default',
         ],
     ],
 ];

@@ -18,6 +18,7 @@ DHErrorLogging - ZF2 / ZF3 application error logging
 - [x] The module adds several useful info to the final log such as IP, request, url called, session id, backtrace,...
 - [x] Ability to choose multiple destinations where to log to, via log writers (DB, email, file, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor') 
 - [x] Custom DB log writer included aside of the other default log writers provided by ZF
+- [x] Custom Doctrine log writer included
 - [x] Content negotiation included (i.e.: renders JSON response for json request, console response for console request, html response for rest of the requests..) 
 - [x] Ability to show a pretty error page that includes an error code (which helps to identify the problem when reporting it back to you) to users 
 - [x] Pretty error page templates for each of the error/exception types (dispatch, render, exception, error, fatal, console., json)

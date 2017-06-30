@@ -98,6 +98,9 @@ return [
             'DhErrorLogging\Options\ModuleOptions' => 'DhErrorLogging\Options\Factory\ModuleOptionsFactory',
             'DhErrorLogging\Sender\ResponseSender' => 'DhErrorLogging\Sender\Factory\ResponseSenderFactory'
         ],
+        'aliases' => [
+            'dherrorlogging_doctrine_entity_manager' => 'doctrine.entitymanager.orm_default'
+        ]
     ],
 
     'doctrine' => [
