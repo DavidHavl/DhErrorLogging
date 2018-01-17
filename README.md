@@ -39,8 +39,10 @@ You can also overwrite the logger, processor, reference generator or response se
 When adding new log writer you can either add new config array for some of the the standard ZF2 writers that don't need injection of other objects (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
 or identifier of your own registered log writer factory (registered in main config section ['log_writers']) to the '['dherrorlogging']['log_writers']' section.
 
-## Example db writer setup:
-Let say you want to enable logging via database. I have provided a custom db log writer (`DhErrorLogging\DbWriter`) right out of the box, so all you need to do is to uncomment the db part (line 71 - 91) in the new dherrorlogging.global.php in your config directory so that the module knows you want to use database, then uncomment line 200 so that the custom writer has access to zend db adapter via this alias,
+In order for the error page to return http status code 500 you should have PHP display_errors off.
+
+### Example db writer setup:
+Let say you want to enable logging to database via zend db. I have provided a custom db log writer (`DhErrorLogging\DbWriter`) right out of the box, so all you need to do is to uncomment the db part (line 71 - 91) of the new dherrorlogging.global.php in your config directory so that the module knows you want to use database,
 and lastly say you are using MySQL you can use the bellow sql schema (also found in /data/sql directory) to create log table in your database:
 <pre>
 CREATE TABLE IF NOT EXISTS `error_log` (
@@ -62,10 +64,10 @@ CREATE TABLE IF NOT EXISTS `error_log` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 </pre>
 Or use your own table and field names but make sure you adjust the `['db']['options']['table_name']` and `['db']['options']['table_map']` accordingly.
-Also make sure that you have properly configured Zend\Db\Adapter\Adapter.
+Also make sure that zend db adapter alias (line 191 of dherrorlogging.global.php) is set to same adapter you are using.
 
-In order for the error page to return http status code 500 you should have PHP display_errors off.
-
+### Example doctrine writer setup:
+I have provided a custom doctrine log writer (`DhErrorLogging\Writer\DoctrineWriter`) right out of the box, so all you need to do is to uncomment the doctrine part (line 100 - 102) of the new dherrorlogging.global.php and run doctrine update command to create the new table. Make sure that doctrine entity manager alias (line 199 of dherrorlogging.global.php) is set to same one you are using.
 
 ## Migration from v1 to v2
 Version 2 is in large respect a complete rewrite.
