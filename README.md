@@ -25,8 +25,8 @@ DHErrorLogging - ZF2 / ZF3 application error logging
 
 ## Installation
 
-- Add ```"davidhavl/dherrorlogging": "~2.0"``` to the require section of your composer.json
-- Add ```'DhErrorLogging'``` to the modules array in your application.config.php before any other module (or as close to the top as possible).
+- Add ```"davidhavl/dherrorlogging": "^2.0"``` to the require section of your composer.json
+- Add ```'DhErrorLogging'``` to the modules array in your application.config.php (or modules.config.php in ZF3 skeleton application) before any other custom modules (or as close to the top as possible).
 - If you have a ./config/autoload/ directory set up for your project, you can drop the `dherrorlogging.global.php.dist` (rename it to `dherrorlogging.global.php`) config file from config directory in it and change the values as you wish.
 - Enable at least one log writer (in the `dherrorlogging.global.php` "log_writers" section).
 - To display an Error Reference in your own exception template (error/404, error/index) make sure you echo the error reference variable <?php echo $this->errorReference; ?>
@@ -39,7 +39,9 @@ You can also overwrite the logger, processor, reference generator or response se
 When adding new log writer you can either add new config array for some of the the standard ZF2 writers that don't need injection of other objects (stream, chromephp, 'fingerscrossed', 'firephp', 'mail', 'mock', 'null', 'syslog', 'zendmonitor')
 or identifier of your own registered log writer factory (registered in main config section ['log_writers']) to the '['dherrorlogging']['log_writers']' section.
 
-When enabling the provided db log writer (`DhErrorLogging\DbWriter`) and using say MySQL you can use the bellow sql schema (also found in /data/sql directory) to create log table:
+## Example db writer setup:
+Let say you want to enable logging via database. I have provided a custom db log writer (`DhErrorLogging\DbWriter`) right out of the box, so all you need to do is to uncomment the db part (line 71 - 91) in the new dherrorlogging.global.php in your config directory so that the module knows you want to use database, then uncomment line 200 so that the custom writer has access to zend db adapter via this alias,
+and lastly say you are using MySQL you can use the bellow sql schema (also found in /data/sql directory) to create log table in your database:
 <pre>
 CREATE TABLE IF NOT EXISTS `error_log` (
   `log_id` int(11) NOT NULL AUTO_INCREMENT,
