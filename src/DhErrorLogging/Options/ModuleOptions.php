@@ -48,6 +48,7 @@ class ModuleOptions extends AbstractOptions
      */
     protected $displayableerrorlevels = E_ALL;
 
+
     /**
      * @return boolean
      */
@@ -156,22 +157,34 @@ class ModuleOptions extends AbstractOptions
     }
 
     /**
-     * This is here just for BC and has no effect
-     * @param mixed $value
-     */
-    public function setPriority($value) {
-        // this is here just for BC and has no effect
-    }
-
-    /**
      * Get level of errors in whitch nice view is presented
      * @return int
      */
-    public function getDisplayableErrorLevels() {
+    public function getDisplayableErrorLevels() 
+    {
         return $this->displayableerrorlevels;
     }
 
-    public function setDisplayableErrorLevels($value) {
+    public function setDisplayableErrorLevels($value) 
+    {
         $this->displayableerrorlevels = (int)$value;
     }
+
+    /**
+     * This is here just for BC and has no effect
+     * @param mixed $value
+     */
+    public function setPriority($value) 
+    {
+        // this is here just for BC and has no effect
+    }
+    /**
+     * This is here just for BC and has no effect
+     * @param mixed $value
+     */
+    public function setZendDbAdapter($value) 
+    {
+        // this is here just for BC and has no effect
+    }
+
 }
